@@ -15,7 +15,7 @@ export function AskBar({
 
   return (
     <form
-      className={`fixed bottom-0 left-0 z-20 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur ${
+      className={`fixed bottom-0 left-0 z-20 border-t border-line bg-surface/90 px-4 py-3 shadow-[0_-10px_30px_rgba(21,40,71,0.06)] backdrop-blur ${
         drawerOpen ? "right-0 hidden sm:block sm:right-[var(--drawer-w)]" : "right-0"
       }`}
       onSubmit={(event) => {
@@ -35,12 +35,12 @@ export function AskBar({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="Ask about this paper"
-          className="h-12 min-w-0 flex-1 rounded-full border border-line bg-surface px-5 text-sm outline-none focus:border-accent"
+          className="h-12 min-w-0 flex-1 rounded-full border-2 border-line bg-surface px-5 text-sm font-medium text-ink outline-none focus:border-accent"
         />
         <button
           type="submit"
           disabled={disabled || value.trim().length === 0}
-          className="h-12 cursor-pointer rounded-full bg-accent px-5 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-primary h-12 px-5 text-sm"
         >
           Ask
         </button>

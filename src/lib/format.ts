@@ -9,6 +9,9 @@ import type {
   WorkspaceTab,
 } from "@/lib/types";
 
+export const MISSING_LINE =
+  "Paperly could not locate this information in the provided document.";
+
 export function tabLabel(tab: WorkspaceTab): string {
   switch (tab) {
     case "overview":
@@ -34,7 +37,7 @@ export function parseTab(value: string | undefined): WorkspaceTab {
     case "overview":
       return value;
     default:
-      return "overview";
+      return "summary";
   }
 }
 
@@ -85,13 +88,13 @@ export function summaryKind(
 export function summaryLabel(mode: SummaryMode): string {
   switch (mode) {
     case "quick":
-      return "Quick";
+      return "Brief";
     case "detailed":
-      return "Detailed";
+      return "Standard";
     case "executive":
       return "Executive";
     case "eli5":
-      return "Explain like I'm new";
+      return "Comprehensive";
     default: {
       const unreachable: never = mode;
       return unreachable;
@@ -123,13 +126,13 @@ export function isSummaryArtifact(artifact: Artifact): artifact is SummaryArtifa
 export function defaultWordsForKind(kind: SummaryArtifact["kind"]): number {
   switch (kind) {
     case "summary-quick":
-      return 150;
-    case "summary-detailed":
-      return 700;
-    case "summary-executive":
       return 250;
+    case "summary-detailed":
+      return 650;
+    case "summary-executive":
+      return 400;
     case "summary-eli5":
-      return 350;
+      return 1400;
     default: {
       const unreachable: never = kind;
       return unreachable;
@@ -149,22 +152,28 @@ export function clampWords(value: unknown, fallback: number): number {
 
 export function parseTone(value: unknown): SummaryTone {
   switch (value) {
-    case "plain":
     case "academic":
+    case "executive":
+    case "simplified":
+    case "plain":
     case "technical":
     case "conversational":
       return value;
     default:
-      return "plain";
+      return "academic";
   }
 }
 
 export function toneLabel(tone: SummaryTone): string {
   switch (tone) {
+    case "academic":
+      return "Academic / Technical";
+    case "executive":
+      return "C-Suite / Executive";
+    case "simplified":
+      return "Simplified / Layperson";
     case "plain":
       return "Plain";
-    case "academic":
-      return "Academic";
     case "technical":
       return "Technical";
     case "conversational":

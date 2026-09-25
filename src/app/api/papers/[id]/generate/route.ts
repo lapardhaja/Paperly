@@ -15,11 +15,13 @@ export async function POST(
       kind?: unknown;
       words?: unknown;
       tone?: unknown;
+      focus?: unknown;
       force?: unknown;
     };
     const kind = assertArtifactKind(body.kind);
+    const focus = typeof body.focus === "string" ? body.focus.trim().slice(0, 2000) : "";
     const settings = isSummaryKind(kind)
-      ? { words: clampWords(body.words, defaultWordsForKind(kind)), tone: parseTone(body.tone) }
+      ? { words: clampWords(body.words, defaultWordsForKind(kind)), tone: parseTone(body.tone), focus }
       : undefined;
     const artifact = await getOrCreateArtifact(id, kind, {
       settings,

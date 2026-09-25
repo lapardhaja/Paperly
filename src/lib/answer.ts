@@ -105,18 +105,24 @@ export async function getOrCreateArtifact(
   options?: { settings?: SummarySettings; force?: boolean },
 ): Promise<Artifact> {
   const requested = isSummaryKind(kind)
-    ? (options?.settings ?? { words: defaultWordsForKind(kind), tone: "plain" as const })
+    ? (options?.settings ?? { words: defaultWordsForKind(kind), tone: "academic" as const, focus: "" })
     : null;
   const cached = await readArtifact(id, kind);
   if (cached) {
     if (!requested || !isSummaryArtifact(cached)) return cached;
-    const same = cached.words === requested.words && cached.tone === requested.tone;
+    const same =
+      cached.words === requested.words &&
+      cached.tone === requested.tone &&
+      (cached.focus ?? "") === requested.focus;
     if (same && !options?.force) return cached;
   }
 
   const paper = await requirePaper(id);
   const pages = await readPages(id);
-  const retrieval = retrievePages(pages, retrievalQuery(kind));
+  const retrieval = retrievePages(
+    pages,
+    requested?.focus ? `${retrievalQuery(kind)} ${requested.focus}` : retrievalQuery(kind),
+  );
   const prompt = `${artifactInstruction(kind, paper.source, requested ?? undefined)}\n\n${documentBlock(paper, retrieval)}`;
   const pdfUri = await attachPdf(paper);
   const createdAt = new Date().toISOString();
@@ -187,6 +193,7 @@ export async function getOrCreateArtifact(
     model: generated.model,
     words: requested.words,
     tone: requested.tone,
+    focus: requested.focus,
     answer: withRetrieval(readModelAnswer(generated.data), retrieval),
   };
   await writeArtifact(id, artifact);

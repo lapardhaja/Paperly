@@ -10,7 +10,7 @@ import { InsightsGrid } from "@/components/InsightsGrid";
 import { PaperHeader } from "@/components/PaperHeader";
 import { PdfDrawer } from "@/components/PdfDrawer";
 import { SummaryView } from "@/components/SummaryView";
-import { isSummaryArtifact, parseTab, summaryKind } from "@/lib/format";
+import { defaultSummaryWords, isSummaryArtifact, parseTab, summaryKind } from "@/lib/format";
 import type {
   AnalysisArtifact,
   Artifact,
@@ -50,7 +50,7 @@ export function Workspace({
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ArtifactKind | "chat" | null>(null);
-  const [summaryMode, setSummaryMode] = useState<SummaryMode | null>(null);
+  const [summaryMode, setSummaryMode] = useState<SummaryMode | null>("detailed");
   const [drawer, setDrawer] = useState<{ open: boolean; page: number; quote?: string }>({
     open: false,
     page: 1,
@@ -58,6 +58,7 @@ export function Workspace({
   const [drawerWidth, setDrawerWidth] = useState(880);
   const [hint, setHint] = useState<string | null>(null);
   const insightsRequested = useRef(Boolean(initialArtifacts.insights));
+  const summaryBoot = useRef(false);
   const hoverTimer = useRef<number | null>(null);
   const locateSeq = useRef(0);
 
@@ -99,7 +100,13 @@ export function Workspace({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
         request
-          ? { kind, words: request.settings.words, tone: request.settings.tone, force: request.force }
+          ? {
+              kind,
+              words: request.settings.words,
+              tone: request.settings.tone,
+              focus: request.settings.focus,
+              force: request.force,
+            }
           : { kind },
       ),
     });
@@ -117,6 +124,26 @@ export function Workspace({
     if (tab !== "overview" || insightsRequested.current) return;
     insightsRequested.current = true;
     void generate("insights");
+    // generate closes over paper.id, which is stable for this page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, paper.id]);
+
+  useEffect(() => {
+    if (tab !== "summary") return;
+    const existing = artifacts["summary-detailed"];
+    if (existing && isSummaryArtifact(existing)) return;
+    if (summaryBoot.current) return;
+    summaryBoot.current = true;
+    const id = window.setTimeout(() => {
+      void generate("summary-detailed", {
+        settings: { words: defaultSummaryWords("detailed"), tone: "academic", focus: "" },
+        force: false,
+      });
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      summaryBoot.current = false;
+    };
     // generate closes over paper.id, which is stable for this page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, paper.id]);
@@ -241,24 +268,28 @@ export function Workspace({
       />
       <main className="mx-auto w-full min-w-0 max-w-3xl px-5 pt-8 pb-32" onMouseUp={onSourceMouseUp}>
         {paper.textQuality === "low" ? (
-          <p className="mb-6 rounded-2xl bg-accent-soft px-4 py-3 text-sm leading-6 text-ink">
+          <p className="mb-6 rounded-2xl border border-line bg-accent-soft px-4 py-3 text-sm leading-6 text-ink">
             This PDF has very little extractable text, so it may be scanned. Paperly will send the
             PDF itself to Gemini, and page citations will only appear when a quote can be checked.
           </p>
         ) : null}
         {paper.abstract && tab === "overview" ? (
-          <p className="mb-8 text-[15px] leading-7 text-muted">{paper.abstract}</p>
+          <p className="mb-8 text-[15px] leading-7 font-medium text-ink">{paper.abstract}</p>
         ) : null}
-        {error ? <p className="mb-6 text-sm text-warn">{error}</p> : null}
-        {hint ? <p className="mb-6 text-sm text-muted">{hint}</p> : null}
+        {error ? (
+          <p className="banner-warn mb-6 px-4 py-3">
+            {error}
+          </p>
+        ) : null}
+        {hint ? <p className="mb-6 text-sm font-medium text-ink">{hint}</p> : null}
         {activeModel ? (
-          <p className="mb-4 font-mono text-xs text-accent">Model {activeModel}</p>
+          <p className="mb-4 font-mono text-xs font-semibold text-ink">Model {activeModel}</p>
         ) : null}
         {tab === "overview" && !insights && pending !== "insights" && error ? (
           <button
             type="button"
             onClick={() => void generate("insights")}
-            className="mb-6 cursor-pointer text-sm text-accent"
+            className="mb-6 cursor-pointer text-sm font-semibold text-accent"
           >
             Try again
           </button>

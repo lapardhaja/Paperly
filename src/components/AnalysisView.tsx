@@ -1,6 +1,7 @@
 "use client";
 
 import { CitationList } from "@/components/CitationList";
+import { Waiting } from "@/components/Waiting";
 import { coverageLine } from "@/lib/format";
 import type { AnalysisArtifact, AnalysisItem, OpenPage, PaperSource } from "@/lib/types";
 
@@ -31,7 +32,7 @@ function ItemList({
             if (first && source === "pdf") onPreviewPage(first.page, first.quote);
           }}
         >
-          <p className="text-[15px] leading-7">{item.text}</p>
+          <p className="text-[15px] leading-7 font-medium">{item.text}</p>
           <CitationList
             citations={item.citations}
             source={source}
@@ -65,30 +66,38 @@ export function AnalysisView({
   if (!artifact) {
     return (
       <div>
-        <p className="max-w-xl text-sm leading-6 text-muted">
-          Strengths from the paper, limitations the authors state, and a separate read of what
+        <p className="max-w-xl text-sm leading-6 font-medium text-ink">
+          Strengths from the document, limitations the authors state, and a separate read of what
           Paperly thinks is weak.
         </p>
         <button
           type="button"
           disabled={loading}
           onClick={onGenerate}
-          className="mt-6 h-11 cursor-pointer rounded-full bg-accent px-5 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-primary mt-6 h-11 px-5 text-sm"
         >
-          {loading ? "Reading the paper…" : "Analyze strengths and weaknesses"}
+          {loading ? "Reading the document…" : "Analyze strengths and weaknesses"}
         </button>
+        {loading ? (
+          <div className="mt-6">
+            <Waiting
+              title="Appraising the document"
+              steps={["Finding stated strengths", "Quoting the authors' limits", "Separating Paperly's judgment"]}
+            />
+          </div>
+        ) : null}
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-10">
-      <p className="text-xs tracking-wide text-muted uppercase">
+      <p className="kicker text-accent">
         {coverageLine(artifact.coverage, artifact.truncated, artifact.pagesUsed)}
       </p>
       <section>
-        <h2 className="font-serif text-2xl">Strengths</h2>
-        <p className="mt-1 text-sm text-muted">Tied to evidence in the paper.</p>
+        <h2 className="font-serif text-2xl tracking-tight">Strengths</h2>
+        <p className="mt-1 text-sm font-medium text-ink">Tied to evidence in the document.</p>
         <div className="mt-4">
           <ItemList
             items={artifact.strengths}
@@ -102,8 +111,8 @@ export function AnalysisView({
       </section>
       <div className="grid gap-8 md:grid-cols-2">
         <section>
-          <h2 className="font-serif text-2xl">Authors&apos; stated limitations</h2>
-          <p className="mt-1 text-sm text-muted">Limitations the authors wrote down.</p>
+          <h2 className="font-serif text-2xl tracking-tight">Authors&apos; stated limitations</h2>
+          <p className="mt-1 text-sm font-medium text-ink">Limitations the authors wrote down.</p>
           <div className="mt-4">
             <ItemList
               items={artifact.authorLimitations}
@@ -116,8 +125,8 @@ export function AnalysisView({
           </div>
         </section>
         <section>
-          <h2 className="font-serif text-2xl">Paperly&apos;s analysis</h2>
-          <p className="mt-1 text-sm text-warn">Judgments, not statements from the paper.</p>
+          <h2 className="font-serif text-2xl tracking-tight">Paperly&apos;s analysis</h2>
+          <p className="mt-1 text-sm font-semibold text-warn">Judgments, not statements from the document.</p>
           <div className="mt-4">
             <ItemList
               items={artifact.paperlyAnalysis}

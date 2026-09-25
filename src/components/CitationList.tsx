@@ -32,14 +32,14 @@ export function CitationList({
             onMouseEnter={() => {
               if (source === "pdf") onPreviewPage(citation.page, citation.quote);
             }}
-            className={`border-l-2 pl-3 ${selected ? "border-accent bg-accent-soft" : "border-line"}`}
+            className={`rounded-r-xl border-l-[3px] py-1 pl-3 ${selected ? "border-gold bg-accent-soft" : "border-line"}`}
           >
-            <p className="text-sm leading-6 text-ink">“{citation.quote}”</p>
+            <p className="text-sm leading-6 font-medium text-ink">“{citation.quote}”</p>
             {source === "pdf" ? (
               <button
                 type="button"
                 onClick={() => onOpenPage(citation.page, citation.quote)}
-                className="mt-1 cursor-pointer text-left text-sm text-accent"
+                className="mt-1 cursor-pointer text-left text-sm font-bold text-accent"
               >
                 Source: {sourceLabel}
               </button>
