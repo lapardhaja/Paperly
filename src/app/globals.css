@@ -62,3 +62,14 @@ body {
 .markdown strong {
   font-weight: 600;
 }
+
+.markdown .katex {
+  font-size: 1.05em;
+  line-height: 1.2;
+}
+
+.markdown .katex-display {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}

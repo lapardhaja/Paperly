@@ -46,6 +46,17 @@ export type GroundedAnswer = {
 
 export type SummaryMode = "quick" | "detailed" | "executive" | "eli5";
 
+export const SUMMARY_TONES = ["plain", "academic", "technical", "conversational"] as const;
+
+export type SummaryTone = (typeof SUMMARY_TONES)[number];
+
+export type SummarySettings = {
+  words: number;
+  tone: SummaryTone;
+};
+
+export type OpenPage = (page: number, quote?: string) => void;
+
 export type ArtifactKind =
   | "insights"
   | "summary-quick"
@@ -80,6 +91,7 @@ export type InsightsArtifact = {
   pagesUsed: number[];
   truncated: boolean;
   createdAt: string;
+  model: string | null;
 };
 
 export type SummaryArtifact = {
@@ -89,7 +101,10 @@ export type SummaryArtifact = {
     | "summary-executive"
     | "summary-eli5";
   answer: GroundedAnswer;
+  words: number;
+  tone: SummaryTone;
   createdAt: string;
+  model: string | null;
 };
 
 export type AnalysisItem = {
@@ -106,6 +121,7 @@ export type AnalysisArtifact = {
   pagesUsed: number[];
   truncated: boolean;
   createdAt: string;
+  model: string | null;
 };
 
 export type Artifact = InsightsArtifact | SummaryArtifact | AnalysisArtifact;
@@ -120,6 +136,7 @@ export type ChatMessage = {
   content: string;
   answer: GroundedAnswer | null;
   createdAt: string;
+  model: string | null;
 };
 
 export type WorkspaceTab = "overview" | "summary" | "analysis" | "chat";

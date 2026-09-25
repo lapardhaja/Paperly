@@ -16,7 +16,7 @@ export function AskBar({
   return (
     <form
       className={`fixed bottom-0 left-0 z-20 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur ${
-        drawerOpen ? "right-0 hidden sm:block sm:right-[440px]" : "right-0"
+        drawerOpen ? "right-0 hidden sm:block sm:right-[var(--drawer-w)]" : "right-0"
       }`}
       onSubmit={(event) => {
         event.preventDefault();

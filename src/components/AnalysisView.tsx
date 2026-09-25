@@ -2,26 +2,43 @@
 
 import { CitationList } from "@/components/CitationList";
 import { coverageLine } from "@/lib/format";
-import type { AnalysisArtifact, AnalysisItem, PaperSource } from "@/lib/types";
+import type { AnalysisArtifact, AnalysisItem, OpenPage, PaperSource } from "@/lib/types";
 
 function ItemList({
   items,
   source,
+  activeQuote,
   onOpenPage,
+  onPreviewPage,
   empty,
 }: {
   items: AnalysisItem[];
   source: PaperSource;
-  onOpenPage: (page: number) => void;
+  activeQuote?: string;
+  onOpenPage: OpenPage;
+  onPreviewPage: OpenPage;
   empty: string;
 }) {
   if (items.length === 0) return <p className="text-sm text-muted">{empty}</p>;
   return (
     <ul className="flex flex-col gap-4">
       {items.map((item, index) => (
-        <li key={`${index}-${item.text.slice(0, 24)}`}>
+        <li
+          key={`${index}-${item.text.slice(0, 24)}`}
+          data-paper-source
+          onMouseEnter={() => {
+            const first = item.citations[0];
+            if (first && source === "pdf") onPreviewPage(first.page, first.quote);
+          }}
+        >
           <p className="text-[15px] leading-7">{item.text}</p>
-          <CitationList citations={item.citations} source={source} onOpenPage={onOpenPage} />
+          <CitationList
+            citations={item.citations}
+            source={source}
+            activeQuote={activeQuote}
+            onOpenPage={onOpenPage}
+            onPreviewPage={onPreviewPage}
+          />
         </li>
       ))}
     </ul>
@@ -32,14 +49,18 @@ export function AnalysisView({
   artifact,
   source,
   loading,
+  activeQuote,
   onGenerate,
   onOpenPage,
+  onPreviewPage,
 }: {
   artifact: AnalysisArtifact | null;
   source: PaperSource;
   loading: boolean;
+  activeQuote?: string;
   onGenerate: () => void;
-  onOpenPage: (page: number) => void;
+  onOpenPage: OpenPage;
+  onPreviewPage: OpenPage;
 }) {
   if (!artifact) {
     return (
@@ -72,7 +93,9 @@ export function AnalysisView({
           <ItemList
             items={artifact.strengths}
             source={source}
+            activeQuote={activeQuote}
             onOpenPage={onOpenPage}
+            onPreviewPage={onPreviewPage}
             empty="No strength could be tied to a quote in the paper."
           />
         </div>
@@ -85,7 +108,9 @@ export function AnalysisView({
             <ItemList
               items={artifact.authorLimitations}
               source={source}
+              activeQuote={activeQuote}
               onOpenPage={onOpenPage}
+              onPreviewPage={onPreviewPage}
               empty="The authors do not state limitations that Paperly could quote."
             />
           </div>
@@ -97,7 +122,9 @@ export function AnalysisView({
             <ItemList
               items={artifact.paperlyAnalysis}
               source={source}
+              activeQuote={activeQuote}
               onOpenPage={onOpenPage}
+              onPreviewPage={onPreviewPage}
               empty="No additional weakness was grounded in the paper."
             />
           </div>

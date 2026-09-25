@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 import { PaperlyError } from "@/lib/errors";
-import { INSIGHT_KEYS, type Artifact, type ArtifactKind, type ChatMessage, type Citation, type Coverage, type InsightKey, type PaperSource } from "@/lib/types";
+import { clampWords, defaultWordsForKind, isSummaryKind } from "@/lib/format";
+import { INSIGHT_KEYS, SUMMARY_TONES, type Artifact, type ArtifactKind, type ChatMessage, type Citation, type Coverage, type InsightKey, type PaperSource, type SummaryArtifact, type SummarySettings, type SummaryTone } from "@/lib/types";
 
 const citationSchema = z.object({
   page: z.number().int().positive(),
@@ -35,15 +36,17 @@ const insightsSchema = z.object({
   pagesUsed: z.array(z.number().int().positive()),
   truncated: z.boolean(),
   createdAt: z.string(),
+  model: z.string().nullable().default(null),
 });
 
-function summarySchema(
-  kind: "summary-quick" | "summary-detailed" | "summary-executive" | "summary-eli5",
-) {
+function summarySchema(kind: SummaryArtifact["kind"]) {
   return z.object({
     kind: z.literal(kind),
     answer: groundedSchema,
+    words: z.number().int().positive().max(5000).optional(),
+    tone: z.enum(SUMMARY_TONES).optional(),
     createdAt: z.string(),
+    model: z.string().nullable().default(null),
   });
 }
 
@@ -61,6 +64,7 @@ const analysisSchema = z.object({
   pagesUsed: z.array(z.number().int().positive()),
   truncated: z.boolean(),
   createdAt: z.string(),
+  model: z.string().nullable().default(null),
 });
 
 const artifactSchema = z.discriminatedUnion("kind", [
@@ -78,6 +82,7 @@ const messageSchema = z.object({
   content: z.string(),
   answer: groundedSchema.nullable(),
   createdAt: z.string(),
+  model: z.string().nullable().default(null),
 });
 
 const citationJson = {
@@ -182,6 +187,7 @@ Rules:
 - citations: quote must be copied verbatim from one page of the PAPER text, a full clause or sentence. page is that page number. label is a short locator such as "Results" or "Table 2" when the surrounding text supports it, otherwise "".
 - Do not cite a page you cannot quote.
 - Be concise. Match the amount of detail to the request. Use short markdown when it makes the answer easier to scan.
+- Write fractions, equations, and symbols as LaTeX. Inline math uses single dollar signs, for example $\\frac{2}{3}$. Display equations use double dollar signs.
 - When only some pages are included, do not treat the missing pages as empty.`;
 
 export function retrievalQuery(kind: ArtifactKind): string {
@@ -205,11 +211,39 @@ export function retrievalQuery(kind: ArtifactKind): string {
   }
 }
 
-export function artifactInstruction(kind: ArtifactKind, source: PaperSource): string {
+function toneInstruction(tone: SummaryTone): string {
+  switch (tone) {
+    case "plain":
+      return "Tone: plain. Write in everyday language and define jargon in the same sentence.";
+    case "academic":
+      return "Tone: academic. Use formal research prose and keep the paper's terms.";
+    case "technical":
+      return "Tone: technical. Be precise. Keep methods, notation, and quantitative claims.";
+    case "conversational":
+      return "Tone: conversational. Write as if briefing a colleague out loud. Stay accurate to the paper.";
+    default: {
+      const unreachable: never = tone;
+      return unreachable;
+    }
+  }
+}
+
+function summaryStyle(kind: ArtifactKind, settings?: SummarySettings): string {
+  if (!isSummaryKind(kind)) return "";
+  const resolved = settings ?? { words: defaultWordsForKind(kind), tone: "plain" as const };
+  return `Length: about ${resolved.words} words. Stay within roughly 15 percent of that count.\n${toneInstruction(resolved.tone)}`;
+}
+
+export function artifactInstruction(
+  kind: ArtifactKind,
+  source: PaperSource,
+  settings?: SummarySettings,
+): string {
   const pasted =
     source === "text"
       ? "This document was pasted. Every citation uses page 1. Put a section name in label when one is visible."
       : "";
+  const style = summaryStyle(kind, settings);
 
   switch (kind) {
     case "insights":
@@ -219,7 +253,8 @@ numbers lists important quantitative results that appear in the paper, or "Not s
 coverage is grounded when the main fields are supported, partial when several are missing, and not_in_paper only if this is not a research paper.
 ${pasted}`;
     case "summary-quick":
-      return `Write a short explanation in plain language, about 150 words. Start with the point of the paper, then how they studied it, then what they found. analysisMarkdown must be "".
+      return `Write a short explanation. Start with the point of the paper, then how they studied it, then what they found. analysisMarkdown must be "".
+${style}
 ${pasted}`;
     case "summary-detailed":
       return `Write a detailed summary with these markdown headings, in this order:
@@ -229,17 +264,20 @@ ${pasted}`;
 ## Data
 ## Results
 ## Conclusions
-Under each heading, write a short paragraph. If that part is not in the paper, say so under the heading. analysisMarkdown must be "".
+Under each heading, write only as much as the length allows. If that part is not in the paper, say so under the heading. The word count covers the whole summary, excluding the heading lines. analysisMarkdown must be "".
+${style}
 ${pasted}`;
     case "summary-executive":
-      return `Write a concise brief for someone who needs the paper quickly. Use these headings:
+      return `Write a brief for someone who needs the paper quickly. Use these headings:
 ## What they did
 ## What they found
 ## Why it matters
-Stay under 250 words. analysisMarkdown must be "".
+The word count covers the whole brief, excluding the heading lines. analysisMarkdown must be "".
+${style}
 ${pasted}`;
     case "summary-eli5":
       return `Explain the paper without assuming advanced knowledge. Define necessary jargon in the same sentence. Stay accurate to the paper. Do not add textbook background the paper does not need. analysisMarkdown must be "".
+${style}
 ${pasted}`;
     case "analysis":
       return `Assess the paper.
@@ -266,9 +304,41 @@ If the question asks whether a method would work somewhere else, keep the paper'
 ${pasted}`;
 }
 
+function countWords(markdown: string): number {
+  const text = markdown
+    .replace(/\$\$[\s\S]*?\$\$/g, " ")
+    .replace(/\$[^$\n]+\$/g, " ")
+    .replace(/[#>*_`~[\]()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return 0;
+  return text.split(" ").length;
+}
+
 export function parseArtifact(value: unknown): Artifact | null {
   const parsed = artifactSchema.safeParse(value);
-  return parsed.success ? parsed.data : null;
+  if (!parsed.success) return null;
+  const artifact = parsed.data;
+  switch (artifact.kind) {
+    case "insights":
+    case "analysis":
+      return artifact;
+    case "summary-quick":
+    case "summary-detailed":
+    case "summary-executive":
+    case "summary-eli5":
+      return {
+        ...artifact,
+        words:
+          artifact.words ??
+          clampWords(countWords(artifact.answer.answerMarkdown), defaultWordsForKind(artifact.kind)),
+        tone: artifact.tone ?? "plain",
+      };
+    default: {
+      const unreachable: never = artifact;
+      return unreachable;
+    }
+  }
 }
 
 export function parseMessages(value: unknown): ChatMessage[] {

@@ -1,15 +1,21 @@
-import type { Citation, PaperSource } from "@/lib/types";
+import { normalizeQuote } from "@/lib/citations";
+import type { Citation, OpenPage, PaperSource } from "@/lib/types";
 
 export function CitationList({
   citations,
   source,
+  activeQuote,
   onOpenPage,
+  onPreviewPage,
 }: {
   citations: Citation[];
   source: PaperSource;
-  onOpenPage: (page: number) => void;
+  activeQuote?: string;
+  onOpenPage: OpenPage;
+  onPreviewPage: OpenPage;
 }) {
   if (citations.length === 0) return null;
+  const active = activeQuote ? normalizeQuote(activeQuote) : "";
 
   return (
     <ul className="mt-4 flex flex-col gap-2">
@@ -19,13 +25,20 @@ export function CitationList({
           : source === "pdf"
             ? `Page ${citation.page}`
             : "Pasted text";
+        const selected = active.length > 0 && normalizeQuote(citation.quote) === active;
         return (
-          <li key={`${citation.page}-${index}`} className="border-l-2 border-line pl-3">
+          <li
+            key={`${citation.page}-${index}`}
+            onMouseEnter={() => {
+              if (source === "pdf") onPreviewPage(citation.page, citation.quote);
+            }}
+            className={`border-l-2 pl-3 ${selected ? "border-accent bg-accent-soft" : "border-line"}`}
+          >
             <p className="text-sm leading-6 text-ink">“{citation.quote}”</p>
             {source === "pdf" ? (
               <button
                 type="button"
-                onClick={() => onOpenPage(citation.page)}
+                onClick={() => onOpenPage(citation.page, citation.quote)}
                 className="mt-1 cursor-pointer text-left text-sm text-accent"
               >
                 Source: {sourceLabel}

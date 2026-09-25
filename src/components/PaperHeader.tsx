@@ -10,11 +10,13 @@ const TABS: WorkspaceTab[] = ["overview", "summary", "analysis", "chat"];
 export function PaperHeader({
   paper,
   tab,
+  model,
   onTab,
   onViewPdf,
 }: {
   paper: Paper;
   tab: WorkspaceTab;
+  model: string | null;
   onTab: (tab: WorkspaceTab) => void;
   onViewPdf: () => void;
 }) {
@@ -27,6 +29,7 @@ export function PaperHeader({
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-serif text-lg text-ink">{paper.title ?? "Untitled paper"}</h1>
           <p className="truncate text-sm text-muted">{paperMetaLine(paper)}</p>
+          {model ? <p className="truncate font-mono text-xs text-accent">{model}</p> : null}
         </div>
         {paper.source === "pdf" ? (
           <button

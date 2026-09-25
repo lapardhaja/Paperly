@@ -13,6 +13,7 @@ import {
   retrievalQuery,
   SYSTEM_PROMPT,
 } from "@/lib/ground";
+import { defaultWordsForKind, isSummaryArtifact, isSummaryKind } from "@/lib/format";
 import { formatPaper, retrievePages, shouldAttachPdf } from "@/lib/retrieve";
 import {
   readArtifact,
@@ -31,6 +32,7 @@ import type {
   PageText,
   Paper,
   Retrieval,
+  SummarySettings,
 } from "@/lib/types";
 
 const HISTORY_LIMIT = 12;
@@ -97,32 +99,44 @@ async function attachPdf(paper: Paper, question?: string): Promise<string | null
   }
 }
 
-export async function getOrCreateArtifact(id: string, kind: ArtifactKind): Promise<Artifact> {
+export async function getOrCreateArtifact(
+  id: string,
+  kind: ArtifactKind,
+  options?: { settings?: SummarySettings; force?: boolean },
+): Promise<Artifact> {
+  const requested = isSummaryKind(kind)
+    ? (options?.settings ?? { words: defaultWordsForKind(kind), tone: "plain" as const })
+    : null;
   const cached = await readArtifact(id, kind);
-  if (cached) return cached;
+  if (cached) {
+    if (!requested || !isSummaryArtifact(cached)) return cached;
+    const same = cached.words === requested.words && cached.tone === requested.tone;
+    if (same && !options?.force) return cached;
+  }
 
   const paper = await requirePaper(id);
   const pages = await readPages(id);
   const retrieval = retrievePages(pages, retrievalQuery(kind));
-  const prompt = `${artifactInstruction(kind, paper.source)}\n\n${documentBlock(paper, retrieval)}`;
+  const prompt = `${artifactInstruction(kind, paper.source, requested ?? undefined)}\n\n${documentBlock(paper, retrieval)}`;
   const pdfUri = await attachPdf(paper);
   const createdAt = new Date().toISOString();
 
   if (kind === "insights") {
-    const raw = await generateJson({
+    const generated = await generateJson({
       system: SYSTEM_PROMPT,
       prompt,
       schema: INSIGHTS_SCHEMA,
       pdfUri,
     });
-    const model = readModelInsights(raw);
+    const parsed = readModelInsights(generated.data);
     const artifact: Artifact = {
       kind: "insights",
-      coverage: model.coverage,
+      coverage: parsed.coverage,
       pagesUsed: retrieval.pages.map((page) => page.pageNumber),
       truncated: retrieval.truncated,
       createdAt,
-      cards: model.cards.map((card) => ({
+      model: generated.model,
+      cards: parsed.cards.map((card) => ({
         ...card,
         citations: verifyCitations(card.citations, retrieval.pages),
       })),
@@ -132,24 +146,25 @@ export async function getOrCreateArtifact(id: string, kind: ArtifactKind): Promi
   }
 
   if (kind === "analysis") {
-    const raw = await generateJson({
+    const generated = await generateJson({
       system: SYSTEM_PROMPT,
       prompt,
       schema: ANALYSIS_SCHEMA,
       pdfUri,
     });
-    const model = readModelAnalysis(raw);
+    const parsed = readModelAnalysis(generated.data);
     const verified = {
-      strengths: verifyItems(model.strengths, retrieval.pages),
-      authorLimitations: verifyItems(model.authorLimitations, retrieval.pages),
-      paperlyAnalysis: verifyItems(model.paperlyAnalysis, retrieval.pages),
+      strengths: verifyItems(parsed.strengths, retrieval.pages),
+      authorLimitations: verifyItems(parsed.authorLimitations, retrieval.pages),
+      paperlyAnalysis: verifyItems(parsed.paperlyAnalysis, retrieval.pages),
     };
     const artifact: Artifact = {
       kind: "analysis",
-      coverage: model.coverage,
+      coverage: parsed.coverage,
       pagesUsed: retrieval.pages.map((page) => page.pageNumber),
       truncated: retrieval.truncated,
       createdAt,
+      model: generated.model,
       strengths: keepQuoted(verified.strengths),
       authorLimitations: keepQuoted(verified.authorLimitations),
       paperlyAnalysis: keepPaperly(verified.paperlyAnalysis),
@@ -158,7 +173,9 @@ export async function getOrCreateArtifact(id: string, kind: ArtifactKind): Promi
     return artifact;
   }
 
-  const raw = await generateJson({
+  if (!requested) throw new PaperlyError("Missing summary settings.", 500);
+
+  const generated = await generateJson({
     system: SYSTEM_PROMPT,
     prompt,
     schema: ANSWER_SCHEMA,
@@ -167,7 +184,10 @@ export async function getOrCreateArtifact(id: string, kind: ArtifactKind): Promi
   const artifact: Artifact = {
     kind,
     createdAt,
-    answer: withRetrieval(readModelAnswer(raw), retrieval),
+    model: generated.model,
+    words: requested.words,
+    tone: requested.tone,
+    answer: withRetrieval(readModelAnswer(generated.data), retrieval),
   };
   await writeArtifact(id, artifact);
   return artifact;
@@ -203,7 +223,7 @@ export async function askPaper(
   const prior = await readMessages(id);
   const retrieval = retrievePages(pages, trimmed);
   const pdfUri = await attachPdf(paper, trimmed);
-  const raw = await generateJson({
+  const generated = await generateJson({
     system: SYSTEM_PROMPT,
     prompt: `${chatInstruction(paper.source)}\n\n${documentBlock(paper, retrieval)}\n\nQUESTION\n${trimmed}`,
     schema: ANSWER_SCHEMA,
@@ -218,13 +238,15 @@ export async function askPaper(
     content: trimmed,
     answer: null,
     createdAt: now,
+    model: null,
   };
   const assistant: ChatMessage = {
     id: crypto.randomUUID(),
     role: "assistant",
     content: "",
-    answer: withRetrieval(readModelAnswer(raw), retrieval),
+    answer: withRetrieval(readModelAnswer(generated.data), retrieval),
     createdAt: new Date().toISOString(),
+    model: generated.model,
   };
   assistant.content = assistant.answer?.answerMarkdown ?? "";
   await writeMessages(id, [...prior, user, assistant]);

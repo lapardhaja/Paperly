@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
 
 import { AnalysisView } from "@/components/AnalysisView";
 import { AskBar } from "@/components/AskBar";
@@ -10,7 +10,7 @@ import { InsightsGrid } from "@/components/InsightsGrid";
 import { PaperHeader } from "@/components/PaperHeader";
 import { PdfDrawer } from "@/components/PdfDrawer";
 import { SummaryView } from "@/components/SummaryView";
-import { parseTab, summaryKind } from "@/lib/format";
+import { isSummaryArtifact, parseTab, summaryKind } from "@/lib/format";
 import type {
   AnalysisArtifact,
   Artifact,
@@ -18,8 +18,10 @@ import type {
   ArtifactMap,
   ChatMessage,
   InsightsArtifact,
+  OpenPage,
   Paper,
   SummaryMode,
+  SummarySettings,
   WorkspaceTab,
 } from "@/lib/types";
 
@@ -49,28 +51,57 @@ export function Workspace({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ArtifactKind | "chat" | null>(null);
   const [summaryMode, setSummaryMode] = useState<SummaryMode | null>(null);
-  const [drawer, setDrawer] = useState<{ open: boolean; page: number }>({ open: false, page: 1 });
+  const [drawer, setDrawer] = useState<{ open: boolean; page: number; quote?: string }>({
+    open: false,
+    page: 1,
+  });
+  const [drawerWidth, setDrawerWidth] = useState(880);
+  const [hint, setHint] = useState<string | null>(null);
   const insightsRequested = useRef(Boolean(initialArtifacts.insights));
+  const hoverTimer = useRef<number | null>(null);
+  const locateSeq = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    };
+  }, []);
 
   function setTab(next: WorkspaceTab) {
     setError(null);
+    setHint(null);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", next);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
-  function openPage(page: number) {
+  const openPage: OpenPage = (page, quote) => {
     if (paper.source !== "pdf") return;
-    setDrawer({ open: true, page });
-  }
+    if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    setHint(null);
+    setDrawer({ open: true, page, quote });
+  };
 
-  async function generate(kind: ArtifactKind) {
+  const previewPage: OpenPage = (page, quote) => {
+    if (paper.source !== "pdf") return;
+    if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = window.setTimeout(() => {
+      setHint(null);
+      setDrawer({ open: true, page, quote });
+    }, 180);
+  };
+
+  async function generate(kind: ArtifactKind, request?: { settings: SummarySettings; force: boolean }) {
     setPending(kind);
     setError(null);
     const response = await fetch(`/api/papers/${paper.id}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind }),
+      body: JSON.stringify(
+        request
+          ? { kind, words: request.settings.words, tone: request.settings.tone, force: request.force }
+          : { kind },
+      ),
     });
     const data = (await response.json()) as { artifact?: Artifact; error?: string };
     setPending(null);
@@ -98,6 +129,7 @@ export function Workspace({
       content: question,
       answer: null,
       createdAt: new Date().toISOString(),
+      model: null,
     };
     setMessages((current) => [...current, optimistic]);
     setPending("chat");
@@ -125,19 +157,89 @@ export function Workspace({
     ]);
   }
 
-  function chooseSummary(mode: SummaryMode) {
+  function writeSummary(mode: SummaryMode, settings: SummarySettings, force: boolean) {
     setSummaryMode(mode);
     const kind = summaryKind(mode);
-    if (!artifacts[kind]) void generate(kind);
+    const existing = artifacts[kind];
+    if (!force && existing && isSummaryArtifact(existing)) return;
+    void generate(kind, { settings, force });
+  }
+
+  async function locateQuote(quote: string) {
+    const seq = locateSeq.current + 1;
+    locateSeq.current = seq;
+    const response = await fetch(`/api/papers/${paper.id}/locate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quote }),
+    });
+    if (seq !== locateSeq.current) return;
+    const data = (await response.json()) as { page?: number | null; error?: string };
+    if (!response.ok) {
+      setHint(data.error ?? "Could not search the paper.");
+      return;
+    }
+    if (!data.page) {
+      setHint("That selection is not in the extracted text.");
+      return;
+    }
+    openPage(data.page, quote);
+  }
+
+  function onSourceMouseUp(event: ReactMouseEvent<HTMLElement>) {
+    if (paper.source !== "pdf") return;
+    const target = event.target;
+    if (!(target instanceof Element) || target.closest("button, a, input, textarea, select")) return;
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    const node = selection.anchorNode;
+    const element = node instanceof Element ? node : node?.parentElement;
+    if (!element?.closest("[data-paper-source]")) return;
+    const text = selection.toString().replace(/\s+/g, " ").trim();
+    if (text.length < 16) return;
+    void locateQuote(text.slice(0, 500));
   }
 
   const insights = isInsights(artifacts.insights) ? artifacts.insights : null;
   const analysis = isAnalysis(artifacts.analysis) ? artifacts.analysis : null;
+  const activeModel = ((): string | null => {
+    switch (tab) {
+      case "overview":
+        return insights?.model ?? null;
+      case "analysis":
+        return analysis?.model ?? null;
+      case "summary": {
+        if (!summaryMode) return null;
+        const artifact = artifacts[summaryKind(summaryMode)];
+        return artifact && isSummaryArtifact(artifact) ? artifact.model : null;
+      }
+      case "chat": {
+        for (let index = messages.length - 1; index >= 0; index -= 1) {
+          const message = messages[index];
+          if (message?.model) return message.model;
+        }
+        return null;
+      }
+      default: {
+        const unreachable: never = tab;
+        return unreachable;
+      }
+    }
+  })();
 
   return (
-    <div className={drawer.open ? "sm:pr-[440px]" : ""}>
-      <PaperHeader paper={paper} tab={tab} onTab={setTab} onViewPdf={() => openPage(drawer.page || 1)} />
-      <main className="mx-auto w-full max-w-3xl px-5 pt-8 pb-32">
+    <div
+      className={drawer.open ? "sm:pr-[var(--drawer-w)]" : ""}
+      style={{ "--drawer-w": `min(${drawerWidth}px, calc(100vw - 280px))` } as CSSProperties}
+    >
+      <PaperHeader
+        paper={paper}
+        tab={tab}
+        model={activeModel}
+        onTab={setTab}
+        onViewPdf={() => openPage(drawer.page || 1)}
+      />
+      <main className="mx-auto w-full min-w-0 max-w-3xl px-5 pt-8 pb-32" onMouseUp={onSourceMouseUp}>
         {paper.textQuality === "low" ? (
           <p className="mb-6 rounded-2xl bg-accent-soft px-4 py-3 text-sm leading-6 text-ink">
             This PDF has very little extractable text, so it may be scanned. Paperly will send the
@@ -148,6 +250,10 @@ export function Workspace({
           <p className="mb-8 text-[15px] leading-7 text-muted">{paper.abstract}</p>
         ) : null}
         {error ? <p className="mb-6 text-sm text-warn">{error}</p> : null}
+        {hint ? <p className="mb-6 text-sm text-muted">{hint}</p> : null}
+        {activeModel ? (
+          <p className="mb-4 font-mono text-xs text-accent">Model {activeModel}</p>
+        ) : null}
         {tab === "overview" && !insights && pending !== "insights" && error ? (
           <button
             type="button"
@@ -162,7 +268,9 @@ export function Workspace({
             artifact={insights}
             source={paper.source}
             loading={pending === "insights"}
+            activeQuote={drawer.quote}
             onOpenPage={openPage}
+            onPreviewPage={previewPage}
           />
         ) : null}
         {tab === "summary" ? (
@@ -170,9 +278,11 @@ export function Workspace({
             artifacts={artifacts}
             mode={summaryMode}
             source={paper.source}
-            loading={pending?.startsWith("summary-") ?? false}
-            onMode={chooseSummary}
+            loading={summaryMode ? pending === summaryKind(summaryMode) : false}
+            activeQuote={drawer.quote}
+            onWrite={writeSummary}
             onOpenPage={openPage}
+            onPreviewPage={previewPage}
           />
         ) : null}
         {tab === "analysis" ? (
@@ -180,8 +290,10 @@ export function Workspace({
             artifact={analysis}
             source={paper.source}
             loading={pending === "analysis"}
+            activeQuote={drawer.quote}
             onGenerate={() => void generate("analysis")}
             onOpenPage={openPage}
+            onPreviewPage={previewPage}
           />
         ) : null}
         {tab === "chat" ? (
@@ -189,7 +301,9 @@ export function Workspace({
             messages={messages}
             source={paper.source}
             pending={pending === "chat"}
+            activeQuote={drawer.quote}
             onOpenPage={openPage}
+            onPreviewPage={previewPage}
           />
         ) : null}
       </main>
@@ -199,6 +313,9 @@ export function Workspace({
           paperId={paper.id}
           pageCount={paper.pageCount}
           page={drawer.page}
+          quote={drawer.quote ?? ""}
+          width={drawerWidth}
+          onResize={setDrawerWidth}
           onPage={(page) => setDrawer({ open: true, page })}
           onClose={() => setDrawer((current) => ({ ...current, open: false }))}
         />

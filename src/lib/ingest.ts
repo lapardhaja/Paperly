@@ -29,13 +29,13 @@ async function enrichMetadata(paper: Paper, pages: PageText[]): Promise<Paper> {
     .slice(0, 12_000);
 
   try {
-    const raw = await generateJson({
+    const generated = await generateJson({
       system: SYSTEM_PROMPT,
       prompt: `Extract bibliographic metadata from the start of this paper. Use an empty string or 0 when a field is not printed. Do not guess.\n\n${sample}`,
       schema: METADATA_SCHEMA,
       maxOutputTokens: 1024,
     });
-    const meta = readModelMetadata(raw);
+    const meta = readModelMetadata(generated.data);
     return updatePaper(paper.id, {
       title: paper.title ?? meta.title,
       authors: paper.authors.length > 0 ? paper.authors : meta.authors,

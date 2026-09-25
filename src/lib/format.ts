@@ -1,4 +1,13 @@
-import type { Coverage, InsightKey, SummaryMode, WorkspaceTab } from "@/lib/types";
+import type {
+  Artifact,
+  ArtifactKind,
+  Coverage,
+  InsightKey,
+  SummaryArtifact,
+  SummaryMode,
+  SummaryTone,
+  WorkspaceTab,
+} from "@/lib/types";
 
 export function tabLabel(tab: WorkspaceTab): string {
   switch (tab) {
@@ -85,6 +94,83 @@ export function summaryLabel(mode: SummaryMode): string {
       return "Explain like I'm new";
     default: {
       const unreachable: never = mode;
+      return unreachable;
+    }
+  }
+}
+
+export function isSummaryKind(kind: ArtifactKind): kind is SummaryArtifact["kind"] {
+  switch (kind) {
+    case "summary-quick":
+    case "summary-detailed":
+    case "summary-executive":
+    case "summary-eli5":
+      return true;
+    case "insights":
+    case "analysis":
+      return false;
+    default: {
+      const unreachable: never = kind;
+      return unreachable;
+    }
+  }
+}
+
+export function isSummaryArtifact(artifact: Artifact): artifact is SummaryArtifact {
+  return isSummaryKind(artifact.kind);
+}
+
+export function defaultWordsForKind(kind: SummaryArtifact["kind"]): number {
+  switch (kind) {
+    case "summary-quick":
+      return 150;
+    case "summary-detailed":
+      return 700;
+    case "summary-executive":
+      return 250;
+    case "summary-eli5":
+      return 350;
+    default: {
+      const unreachable: never = kind;
+      return unreachable;
+    }
+  }
+}
+
+export function defaultSummaryWords(mode: SummaryMode): number {
+  return defaultWordsForKind(summaryKind(mode));
+}
+
+export function clampWords(value: unknown, fallback: number): number {
+  const parsed = typeof value === "number" || typeof value === "string" ? Number(value) : Number.NaN;
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(2000, Math.max(50, Math.round(parsed)));
+}
+
+export function parseTone(value: unknown): SummaryTone {
+  switch (value) {
+    case "plain":
+    case "academic":
+    case "technical":
+    case "conversational":
+      return value;
+    default:
+      return "plain";
+  }
+}
+
+export function toneLabel(tone: SummaryTone): string {
+  switch (tone) {
+    case "plain":
+      return "Plain";
+    case "academic":
+      return "Academic";
+    case "technical":
+      return "Technical";
+    case "conversational":
+      return "Conversational";
+    default: {
+      const unreachable: never = tone;
       return unreachable;
     }
   }

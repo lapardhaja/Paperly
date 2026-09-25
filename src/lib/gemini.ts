@@ -21,8 +21,39 @@ function apiKey(): string {
   return key;
 }
 
+const FALLBACK_MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+] as const;
+
 export function geminiModel(): string {
-  return process.env.GEMINI_MODEL?.trim() || "gemini-3-flash-preview";
+  return process.env.GEMINI_MODEL?.trim() || FALLBACK_MODELS[0];
+}
+
+function modelOrder(): string[] {
+  const preferred = geminiModel();
+  return [preferred, ...FALLBACK_MODELS.filter((model) => model !== preferred)];
+}
+
+type Overload = "quota" | "busy" | "missing";
+
+function classify(error: unknown): Overload | null {
+  if (typeof error !== "object" || error === null) return null;
+  const record = error as { status?: number; message?: string };
+  const message = record.message ?? "";
+  if (record.status === 404 || /not found|is not supported|unknown model/i.test(message)) return "missing";
+  if (
+    record.status === 429 ||
+    /RESOURCE_EXHAUSTED|quota exceeded|exceeded your current quota/i.test(message)
+  ) {
+    return "quota";
+  }
+  if (record.status === 503 || /UNAVAILABLE|high demand|overloaded/i.test(message)) return "busy";
+  return null;
 }
 
 function client(): GoogleGenAI {
@@ -48,7 +79,7 @@ export async function generateJson(input: {
   history?: { role: "user" | "assistant"; text: string }[];
   pdfUri?: string | null;
   maxOutputTokens?: number;
-}): Promise<unknown> {
+}): Promise<{ data: unknown; model: string }> {
   const ai = client();
   const contents: Content[] = [];
 
@@ -72,25 +103,51 @@ export async function generateJson(input: {
   parts.push({ text: input.prompt });
   contents.push({ role: "user", parts });
 
-  try {
-    const response = await ai.models.generateContent({
-      model: geminiModel(),
-      contents,
-      config: {
-        systemInstruction: input.system,
-        temperature: 0.2,
-        maxOutputTokens: input.maxOutputTokens ?? 8192,
-        responseMimeType: "application/json",
-        responseJsonSchema: input.schema,
-      },
-    });
-    return parseModelJson(response.text);
-  } catch (error) {
-    if (error instanceof PaperlyError) throw error;
-    console.error(error);
-    const message = error instanceof Error ? error.message : "Gemini request failed.";
-    throw new PaperlyError(message.slice(0, 300), 502);
+  const config = {
+    systemInstruction: input.system,
+    temperature: 0.2,
+    maxOutputTokens: input.maxOutputTokens ?? 8192,
+    responseMimeType: "application/json",
+    responseJsonSchema: input.schema,
+  };
+  let lastError: unknown;
+  let sawQuota = false;
+  let sawBusy = false;
+
+  for (const [index, model] of modelOrder().entries()) {
+    const attempts = index === 0 ? 2 : 1;
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        const response = await ai.models.generateContent({ model, contents, config });
+        if (model !== geminiModel()) {
+          console.info(`Gemini ${geminiModel()} was unavailable. Answered with ${model}.`);
+        }
+        return { data: parseModelJson(response.text), model };
+      } catch (error) {
+        if (error instanceof PaperlyError) throw error;
+        lastError = error;
+        const kind = classify(error);
+        if (!kind) {
+          const message = error instanceof Error ? error.message : "Gemini request failed.";
+          throw new PaperlyError(message.slice(0, 300), 502);
+        }
+        if (kind === "quota") sawQuota = true;
+        if (kind === "busy") sawBusy = true;
+        console.info(`Gemini ${model} skipped (${kind}).`);
+        if (kind === "quota" || kind === "missing") break;
+        if (attempt === 0 && attempts > 1) await sleep(800);
+      }
+    }
   }
+
+  console.error(lastError);
+  const message =
+    sawQuota && sawBusy
+      ? "Gemini 3.8 Flash is busy, and the other free Flash quotas are used up. Try again in a minute."
+      : sawQuota
+        ? "The free Gemini quota is used up for now. Try again in a minute."
+        : "Gemini is busy right now, including the other Flash models. Wait a minute and try again.";
+  throw new PaperlyError(message, 503);
 }
 
 export async function ensureGeminiFile(paperId: string): Promise<GeminiFileRef> {

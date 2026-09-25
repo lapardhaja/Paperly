@@ -1,19 +1,23 @@
 import { CitationList } from "@/components/CitationList";
 import { MarkdownView } from "@/components/MarkdownView";
 import { coverageLine } from "@/lib/format";
-import type { GroundedAnswer, PaperSource } from "@/lib/types";
+import type { GroundedAnswer, OpenPage, PaperSource } from "@/lib/types";
 
 export function AnswerBlock({
   answer,
   source,
+  activeQuote,
   onOpenPage,
+  onPreviewPage,
 }: {
   answer: GroundedAnswer;
   source: PaperSource;
-  onOpenPage: (page: number) => void;
+  activeQuote?: string;
+  onOpenPage: OpenPage;
+  onPreviewPage: OpenPage;
 }) {
   return (
-    <div>
+    <div data-paper-source>
       <p className="mb-3 text-xs tracking-wide text-muted uppercase">
         {coverageLine(answer.coverage, answer.truncated, answer.pagesUsed)}
       </p>
@@ -27,7 +31,13 @@ export function AnswerBlock({
           </div>
         </div>
       ) : null}
-      <CitationList citations={answer.citations} source={source} onOpenPage={onOpenPage} />
+      <CitationList
+        citations={answer.citations}
+        source={source}
+        activeQuote={activeQuote}
+        onOpenPage={onOpenPage}
+        onPreviewPage={onPreviewPage}
+      />
     </div>
   );
 }

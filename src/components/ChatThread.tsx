@@ -3,18 +3,22 @@
 import { useEffect, useRef } from "react";
 
 import { AnswerBlock } from "@/components/AnswerBlock";
-import type { ChatMessage, PaperSource } from "@/lib/types";
+import type { ChatMessage, OpenPage, PaperSource } from "@/lib/types";
 
 export function ChatThread({
   messages,
   source,
   pending,
+  activeQuote,
   onOpenPage,
+  onPreviewPage,
 }: {
   messages: ChatMessage[];
   source: PaperSource;
   pending: boolean;
-  onOpenPage: (page: number) => void;
+  activeQuote?: string;
+  onOpenPage: OpenPage;
+  onPreviewPage: OpenPage;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -39,8 +43,17 @@ export function ChatThread({
           </div>
         ) : (
           <div key={message.id} className="rounded-2xl border border-line bg-surface px-4 py-4">
+            {message.model ? (
+              <p className="mb-2 font-mono text-xs text-accent">{message.model}</p>
+            ) : null}
             {message.answer ? (
-              <AnswerBlock answer={message.answer} source={source} onOpenPage={onOpenPage} />
+              <AnswerBlock
+                answer={message.answer}
+                source={source}
+                activeQuote={activeQuote}
+                onOpenPage={onOpenPage}
+                onPreviewPage={onPreviewPage}
+              />
             ) : (
               <p className="text-[15px] leading-7">{message.content}</p>
             )}
