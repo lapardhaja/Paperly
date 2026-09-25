@@ -22,14 +22,14 @@ export function PaperHeader({
   onViewPdf: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-white/95 shadow-[0_8px_24px_rgba(0,0,0,0.04)] backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-line bg-surface/85 shadow-[0_8px_24px_rgba(21,40,71,0.05)] backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3">
         <Link href="/" className="flex shrink-0 items-center gap-2 text-ink">
           <BrandMark className="h-8 w-8" />
-          <span className="text-base font-bold tracking-tight">Paperly</span>
+          <span className="font-serif text-base tracking-tight">Paperly</span>
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-lg font-bold tracking-tight text-ink">{paper.title ?? "Untitled document"}</h1>
+          <h1 className="truncate font-serif text-lg tracking-tight text-ink">{paper.title ?? "Untitled document"}</h1>
           <p className="truncate text-sm font-medium text-ink">{paperMetaLine(paper)}</p>
           {model ? <p className="truncate font-mono text-xs font-semibold text-ink">{model}</p> : null}
         </div>
@@ -37,7 +37,7 @@ export function PaperHeader({
           <button
             type="button"
             onClick={onViewPdf}
-            className="h-10 shrink-0 cursor-pointer rounded-full bg-accent px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(208,0,0,0.28)] transition hover:bg-[#b00000] active:scale-[0.98]"
+            className="btn-primary h-10 px-4 text-sm"
           >
             View PDF
           </button>

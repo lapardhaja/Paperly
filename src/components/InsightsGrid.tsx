@@ -42,7 +42,7 @@ export function InsightsGrid({
 
   return (
     <div>
-      <p className="text-xs font-bold tracking-[0.14em] text-ink uppercase">
+      <p className="kicker text-accent">
         {coverageLine(artifact.coverage, artifact.truncated, artifact.pagesUsed)}
       </p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -56,7 +56,7 @@ export function InsightsGrid({
             }}
             className="lift rounded-2xl border border-line bg-surface px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.05)]"
           >
-            <h2 className="text-xs font-bold tracking-[0.14em] text-accent uppercase">{insightLabel(card.key)}</h2>
+            <h2 className="kicker text-accent">{insightLabel(card.key)}</h2>
             <p className="mt-2 text-[15px] leading-7 font-medium text-ink">{card.body}</p>
             <CitationList
               citations={card.citations}

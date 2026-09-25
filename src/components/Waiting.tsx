@@ -37,7 +37,7 @@ export function Waiting({
       }
     >
       <div className="relative grid h-16 w-16 shrink-0 place-items-center">
-        <span className="spin-ring absolute inset-0 rounded-full border-2 border-[#f0d0cc] border-t-accent" />
+        <span className="spin-ring absolute inset-0 rounded-full border-2" />
         <div className="scan-doc" aria-hidden>
           <span />
           <span className="w-8" />
@@ -50,8 +50,8 @@ export function Waiting({
         <p className="text-sm font-semibold tracking-tight text-ink">{title}</p>
         <p className="mt-1 text-sm text-ink">{step}</p>
         {detail ? <p className="mt-1 truncate text-xs font-medium text-muted">{detail}</p> : null}
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e7e7e7]">
-          <div className="progress-bar h-full w-1/3 rounded-full bg-accent" />
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e6dfd1]">
+          <div className="progress-bar h-full w-1/3 rounded-full bg-gold" />
         </div>
         <ol className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
           {steps.map((item, itemIndex) => (

@@ -1,7 +1,7 @@
 export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-lg bg-accent text-white shadow-[0_6px_16px_rgba(208,0,0,0.28)] ${className}`}
+      className={`grid shrink-0 place-items-center rounded-lg bg-accent text-gold shadow-[0_6px_16px_rgba(21,40,71,0.22)] ring-1 ring-gold/80 ${className}`}
       aria-hidden
     >
       <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none">

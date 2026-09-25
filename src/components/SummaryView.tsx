@@ -108,7 +108,7 @@ export function SummaryView({
   return (
     <div>
       <div className="tool-card p-4">
-        <p className="text-xs font-bold tracking-[0.14em] text-accent uppercase">Length</p>
+        <p className="kicker text-accent">Length</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {MODES.map((item) => {
             const selected = item === activeMode;
@@ -132,8 +132,8 @@ export function SummaryView({
                 }}
                 className={`h-10 cursor-pointer rounded-full px-4 text-sm font-semibold transition active:scale-[0.98] ${
                   selected
-                    ? "bg-accent text-white shadow-[0_8px_18px_rgba(208,0,0,0.28)]"
-                    : "bg-white text-ink ring-2 ring-[#c6c6c6] hover:ring-ink"
+                    ? "bg-accent text-white shadow-[0_8px_18px_rgba(21,40,71,0.22)]"
+                    : "bg-surface text-ink ring-2 ring-line hover:ring-accent"
                 }`}
               >
                 {summaryLabel(item)}
@@ -207,7 +207,7 @@ export function SummaryView({
             type="button"
             disabled={loading || wordsInvalid}
             onClick={() => onWrite(activeMode, settingsFor(activeMode), true)}
-            className="h-11 cursor-pointer rounded-full bg-accent px-5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(208,0,0,0.3)] transition hover:bg-[#b00000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-primary h-11 px-5 text-sm"
           >
             {loading ? "Summarizing…" : summary ? "Rewrite summary" : "Summarize PDF"}
           </button>

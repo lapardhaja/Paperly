@@ -43,7 +43,7 @@ export function UploadDropzone({
         active ? "is-active" : ""
       }`}
     >
-      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-accent text-white shadow-[0_10px_24px_rgba(208,0,0,0.28)]">
+      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-accent text-gold shadow-[0_10px_24px_rgba(21,40,71,0.22)]">
         <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" aria-hidden>
           <path
             d="M7 3.5h7.1L19 8.3V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5A1.5 1.5 0 0 1 7.5 3.5H7Z"
@@ -55,7 +55,7 @@ export function UploadDropzone({
           <path d="M9.4 13.6 12 11.1l2.6 2.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
-      <p className="mt-5 text-2xl font-bold tracking-tight text-ink">
+      <p className="mt-5 font-serif text-2xl tracking-tight text-ink">
         {active ? "Drop to summarize" : "Drag and drop a PDF"}
       </p>
       <p className="mt-2 max-w-sm text-sm font-medium text-ink">
@@ -65,7 +65,7 @@ export function UploadDropzone({
         type="button"
         disabled={disabled}
         onClick={() => inputRef.current?.click()}
-        className="mt-6 inline-flex h-12 cursor-pointer items-center rounded-full bg-accent px-6 text-[15px] font-semibold text-white shadow-[0_10px_24px_rgba(208,0,0,0.32)] transition hover:bg-[#b00000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+        className="btn-primary mt-6 h-12 px-6 text-[15px]"
       >
         Select a file
       </button>

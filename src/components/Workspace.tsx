@@ -268,7 +268,7 @@ export function Workspace({
       />
       <main className="mx-auto w-full min-w-0 max-w-3xl px-5 pt-8 pb-32" onMouseUp={onSourceMouseUp}>
         {paper.textQuality === "low" ? (
-          <p className="mb-6 rounded-2xl border border-[#f0b4a8] bg-accent-soft px-4 py-3 text-sm leading-6 font-medium text-ink">
+          <p className="mb-6 rounded-2xl border border-line bg-accent-soft px-4 py-3 text-sm leading-6 text-ink">
             This PDF has very little extractable text, so it may be scanned. Paperly will send the
             PDF itself to Gemini, and page citations will only appear when a quote can be checked.
           </p>
@@ -277,7 +277,7 @@ export function Workspace({
           <p className="mb-8 text-[15px] leading-7 font-medium text-ink">{paper.abstract}</p>
         ) : null}
         {error ? (
-          <p className="mb-6 rounded-xl border border-[#e7b2a8] bg-[#fff1ee] px-4 py-3 text-sm font-semibold text-warn">
+          <p className="banner-warn mb-6 px-4 py-3">
             {error}
           </p>
         ) : null}

@@ -46,7 +46,7 @@ export function PastePanel({
         <button
           type="submit"
           disabled={disabled || text.trim().length < 80}
-          className="h-10 cursor-pointer rounded-full bg-accent px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(208,0,0,0.28)] transition hover:bg-[#b00000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-primary h-10 px-4 text-sm"
         >
           Use this text
         </button>

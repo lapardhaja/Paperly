@@ -32,7 +32,7 @@ export function CitationList({
             onMouseEnter={() => {
               if (source === "pdf") onPreviewPage(citation.page, citation.quote);
             }}
-            className={`rounded-r-xl border-l-[3px] py-1 pl-3 ${selected ? "border-accent bg-accent-soft" : "border-[#8a8a8a]"}`}
+            className={`rounded-r-xl border-l-[3px] py-1 pl-3 ${selected ? "border-gold bg-accent-soft" : "border-line"}`}
           >
             <p className="text-sm leading-6 font-medium text-ink">“{citation.quote}”</p>
             {source === "pdf" ? (

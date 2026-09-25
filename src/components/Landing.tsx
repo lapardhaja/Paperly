@@ -97,64 +97,57 @@ export function Landing() {
   }
 
   return (
-    <div className="landing-mesh relative min-h-dvh overflow-hidden">
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="mesh-orb mesh-orb-a" />
-        <div className="mesh-orb mesh-orb-b" />
-      </div>
-      <header className="relative z-10 border-b border-black/10 bg-white/85 backdrop-blur">
+    <div className="min-h-dvh">
+      <header className="sticky top-0 z-20 border-b border-line bg-surface/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
             <BrandMark />
-            <span className="text-[17px] font-bold tracking-tight">Paperly</span>
+            <span className="font-serif text-[17px] tracking-tight">Paperly</span>
           </div>
-          <p className="text-sm font-semibold text-ink">AI PDF summarizer</p>
+          <p className="kicker text-accent">AI PDF summarizer</p>
         </div>
       </header>
-      <main className="relative z-10 mx-auto w-full max-w-3xl px-5 pt-14 pb-20">
-        <p className="text-center text-xs font-bold tracking-[0.16em] text-accent uppercase">
-          Document intelligence
-        </p>
-        <h1 className="mt-3 text-center text-5xl font-bold tracking-[-0.045em] text-ink sm:text-6xl">
-          AI PDF summarizer
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-center text-lg leading-7 font-medium text-ink">
-          Turn a paper, scan, or handwritten PDF into a structured summary. Every claim keeps its page.
-        </p>
-        <div className="tool-card mt-10 p-3 sm:p-4">
-          {busy ? (
-            <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
-          ) : (
-            <UploadDropzone disabled={busy} onFile={(file) => void upload(file)} onReject={setError} />
-          )}
-        </div>
+      <main className="mx-auto w-full max-w-3xl px-5 pt-8 pb-20">
+        <section className="site-hero rounded-[1.6rem] px-5 py-10 sm:px-10">
+          <p className="kicker text-center text-gold">Document intelligence</p>
+          <h1 className="mt-3 text-center font-serif text-4xl tracking-tight text-balance text-white sm:text-6xl">
+            AI PDF summarizer
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-center text-lg leading-7 text-[#d5dfec]">
+            Turn a paper, scan, or handwritten PDF into a structured summary. Every claim keeps its page.
+          </p>
+          <div className="site-hero-card mt-8 p-3 sm:p-4">
+            {busy ? (
+              <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
+            ) : (
+              <UploadDropzone disabled={busy} onFile={(file) => void upload(file)} onReject={setError} />
+            )}
+          </div>
+        </section>
         <div className="mt-4 flex justify-center">
           <PastePanel disabled={busy} onPaste={(text) => void paste(text)} />
         </div>
-        {error ? (
-          <p className="mt-4 rounded-xl border border-[#e7b2a8] bg-[#fff1ee] px-4 py-3 text-sm font-semibold text-warn">
-            {error}
-          </p>
-        ) : null}
+        {error ? <p className="banner-warn mt-4 px-4 py-3">{error}</p> : null}
         <section className="mt-16">
-          <h2 className="text-center text-2xl font-bold tracking-tight">Summarize a PDF in three steps</h2>
+          <p className="kicker text-center text-accent">How it works</p>
+          <h2 className="mt-2 text-center font-serif text-3xl tracking-tight">Summarize a PDF in three steps</h2>
           <ol className="mt-6 grid gap-4 sm:grid-cols-3">
             {STEPS.map((step, index) => (
-              <li key={step.title} className="lift rounded-2xl border border-line bg-surface p-4">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-sm font-bold text-white">
+              <li key={step.title} className="lift hoban-card rounded-2xl p-4">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-accent font-serif text-sm text-white">
                   {index + 1}
                 </span>
-                <h3 className="mt-3 text-base font-bold tracking-tight">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 font-medium text-ink">{step.body}</p>
+                <h3 className="mt-3 font-serif text-lg tracking-tight">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-ink">{step.body}</p>
               </li>
             ))}
           </ol>
         </section>
         <section className="mt-12 grid gap-4 sm:grid-cols-2">
           {FEATURES.map((feature) => (
-            <article key={feature.title} className="lift rounded-2xl border border-line bg-surface p-5">
-              <h3 className="text-base font-bold tracking-tight">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-6 font-medium text-ink">{feature.body}</p>
+            <article key={feature.title} className="lift hoban-card rounded-2xl p-5">
+              <h3 className="font-serif text-lg tracking-tight">{feature.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-ink">{feature.body}</p>
             </article>
           ))}
         </section>

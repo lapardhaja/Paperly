@@ -74,7 +74,7 @@ export function AnalysisView({
           type="button"
           disabled={loading}
           onClick={onGenerate}
-          className="mt-6 h-11 cursor-pointer rounded-full bg-accent px-5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(208,0,0,0.3)] transition hover:bg-[#b00000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-primary mt-6 h-11 px-5 text-sm"
         >
           {loading ? "Reading the document…" : "Analyze strengths and weaknesses"}
         </button>
@@ -92,11 +92,11 @@ export function AnalysisView({
 
   return (
     <div className="flex flex-col gap-10">
-      <p className="text-xs font-bold tracking-[0.14em] text-ink uppercase">
+      <p className="kicker text-accent">
         {coverageLine(artifact.coverage, artifact.truncated, artifact.pagesUsed)}
       </p>
       <section>
-        <h2 className="text-2xl font-bold tracking-tight">Strengths</h2>
+        <h2 className="font-serif text-2xl tracking-tight">Strengths</h2>
         <p className="mt-1 text-sm font-medium text-ink">Tied to evidence in the document.</p>
         <div className="mt-4">
           <ItemList
@@ -111,7 +111,7 @@ export function AnalysisView({
       </section>
       <div className="grid gap-8 md:grid-cols-2">
         <section>
-          <h2 className="text-2xl font-bold tracking-tight">Authors&apos; stated limitations</h2>
+          <h2 className="font-serif text-2xl tracking-tight">Authors&apos; stated limitations</h2>
           <p className="mt-1 text-sm font-medium text-ink">Limitations the authors wrote down.</p>
           <div className="mt-4">
             <ItemList
@@ -125,7 +125,7 @@ export function AnalysisView({
           </div>
         </section>
         <section>
-          <h2 className="text-2xl font-bold tracking-tight">Paperly&apos;s analysis</h2>
+          <h2 className="font-serif text-2xl tracking-tight">Paperly&apos;s analysis</h2>
           <p className="mt-1 text-sm font-semibold text-warn">Judgments, not statements from the document.</p>
           <div className="mt-4">
             <ItemList

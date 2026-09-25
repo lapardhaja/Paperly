@@ -15,7 +15,7 @@ export function AskBar({
 
   return (
     <form
-      className={`fixed bottom-0 left-0 z-20 border-t border-line bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.06)] backdrop-blur ${
+      className={`fixed bottom-0 left-0 z-20 border-t border-line bg-surface/90 px-4 py-3 shadow-[0_-10px_30px_rgba(21,40,71,0.06)] backdrop-blur ${
         drawerOpen ? "right-0 hidden sm:block sm:right-[var(--drawer-w)]" : "right-0"
       }`}
       onSubmit={(event) => {
@@ -40,7 +40,7 @@ export function AskBar({
         <button
           type="submit"
           disabled={disabled || value.trim().length === 0}
-          className="h-12 cursor-pointer rounded-full bg-accent px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(208,0,0,0.28)] transition hover:bg-[#b00000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-primary h-12 px-5 text-sm"
         >
           Ask
         </button>
