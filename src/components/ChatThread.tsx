@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { AnswerBlock } from "@/components/AnswerBlock";
+import { Waiting } from "@/components/Waiting";
 import type { ChatMessage, OpenPage, PaperSource } from "@/lib/types";
 
 export function ChatThread({
@@ -28,8 +29,8 @@ export function ChatThread({
 
   if (messages.length === 0 && !pending) {
     return (
-      <p className="text-sm leading-6 text-muted">
-        Ask about the method, the results, a figure, or what the paper does not say.
+      <p className="text-sm leading-6 font-medium text-ink">
+        Ask about a method, a result, a figure, or something the document does not say.
       </p>
     );
   }
@@ -38,13 +39,13 @@ export function ChatThread({
     <div className="flex flex-col gap-6">
       {messages.map((message) =>
         message.role === "user" ? (
-          <div key={message.id} className="ml-auto max-w-[85%] rounded-2xl bg-accent-soft px-4 py-3">
-            <p className="text-[15px] leading-7 whitespace-pre-wrap">{message.content}</p>
+          <div key={message.id} className="ml-auto max-w-[85%] rounded-2xl border border-[#f0b4a8] bg-accent-soft px-4 py-3 shadow-[0_8px_20px_rgba(208,0,0,0.06)]">
+            <p className="text-[15px] leading-7 font-medium whitespace-pre-wrap">{message.content}</p>
           </div>
         ) : (
-          <div key={message.id} className="rounded-2xl border border-line bg-surface px-4 py-4">
+          <div key={message.id} className="rounded-2xl border border-line bg-surface px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.05)]">
             {message.model ? (
-              <p className="mb-2 font-mono text-xs text-accent">{message.model}</p>
+              <p className="mb-2 font-mono text-xs font-semibold text-ink">{message.model}</p>
             ) : null}
             {message.answer ? (
               <AnswerBlock
@@ -60,7 +61,13 @@ export function ChatThread({
           </div>
         ),
       )}
-      {pending ? <p className="text-sm text-muted">Looking through the paper…</p> : null}
+      {pending ? (
+        <Waiting
+          compact
+          title="Looking through the document"
+          steps={["Searching the pages", "Checking the wording", "Writing a cited answer"]}
+        />
+      ) : null}
       <div ref={endRef} />
     </div>
   );

@@ -46,13 +46,23 @@ export type GroundedAnswer = {
 
 export type SummaryMode = "quick" | "detailed" | "executive" | "eli5";
 
-export const SUMMARY_TONES = ["plain", "academic", "technical", "conversational"] as const;
+export const SUMMARY_TONES = [
+  "academic",
+  "executive",
+  "simplified",
+  "plain",
+  "technical",
+  "conversational",
+] as const;
+
+export const PRIMARY_TONES = ["academic", "executive", "simplified"] as const;
 
 export type SummaryTone = (typeof SUMMARY_TONES)[number];
 
 export type SummarySettings = {
   words: number;
   tone: SummaryTone;
+  focus: string;
 };
 
 export type OpenPage = (page: number, quote?: string) => void;
@@ -103,6 +113,7 @@ export type SummaryArtifact = {
   answer: GroundedAnswer;
   words: number;
   tone: SummaryTone;
+  focus: string;
   createdAt: string;
   model: string | null;
 };

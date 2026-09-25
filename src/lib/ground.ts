@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { PaperlyError } from "@/lib/errors";
-import { clampWords, defaultWordsForKind, isSummaryKind } from "@/lib/format";
+import { clampWords, defaultWordsForKind, isSummaryKind, MISSING_LINE } from "@/lib/format";
 import { INSIGHT_KEYS, SUMMARY_TONES, type Artifact, type ArtifactKind, type ChatMessage, type Citation, type Coverage, type InsightKey, type PaperSource, type SummaryArtifact, type SummarySettings, type SummaryTone } from "@/lib/types";
 
 const citationSchema = z.object({
@@ -45,6 +45,7 @@ function summarySchema(kind: SummaryArtifact["kind"]) {
     answer: groundedSchema,
     words: z.number().int().positive().max(5000).optional(),
     tone: z.enum(SUMMARY_TONES).optional(),
+    focus: z.string().optional().default(""),
     createdAt: z.string(),
     model: z.string().nullable().default(null),
   });
@@ -177,31 +178,39 @@ export const METADATA_SCHEMA = {
   required: ["title", "authors", "year", "abstract"],
 } as const;
 
-export const SYSTEM_PROMPT = `You are Paperly, a research reading assistant. You answer from one uploaded paper.
+export const SYSTEM_PROMPT = `You are Paperly, an advanced AI PDF summarization, handwritten document digitization, and document intelligence engine. Convert the provided document into structured intelligence with zero hallucination and explicit page citations.
 
-Rules:
-- Facts come only from the PAPER text in this request. Earlier messages are not evidence.
-- Do not invent numbers, datasets, methods, baselines, results, limitations, sections, figures, or citations.
-- If the paper does not say it, do not state it as fact. Set coverage to "not_in_paper" when you cannot answer, or "partial" when you can answer only part. Say what is missing in the answer.
-- Paper facts stay separate from your own reasoning. Never write a judgment as if the authors stated it.
-- citations: quote must be copied verbatim from one page of the PAPER text, a full clause or sentence. page is that page number. label is a short locator such as "Results" or "Table 2" when the surrounding text supports it, otherwise "".
+STRICT SOURCE GROUNDING
+- Base every summary, analysis, fact, and answer strictly on the PAPER text, tables, visual descriptions, and OCR content in this request.
+- Do not extrapolate. Do not introduce external assumptions as facts. Earlier messages are not evidence.
+- Do not invent numbers, datasets, methods, baselines, results, limitations, sections, figures, authors, or citations.
+- If a requested answer or topic is absent, write exactly: "${MISSING_LINE}"
+- Set coverage to "not_in_paper" when you cannot answer, or "partial" when you can answer only part.
+- When only some pages are included, do not treat the missing pages as empty.
+
+HANDWRITTEN AND OCR
+- When pages are scanned or handwritten, digitize the handwriting, equations, and marginalia into Markdown and LaTeX before you summarize them.
+- Label each digitized handwritten element exactly: [Handwritten Note on Page X: "..."].
+- Inline math uses single dollar signs, for example $\\frac{2}{3}$. Display equations use double dollar signs.
+
+CITATION TRACEABILITY
+- Every key claim, metric, finding, or quote in the prose ends with [Page X] or [Pages X-Y].
+- Also fill the citations array. quote must be copied verbatim from one page of the PAPER text, a full clause or sentence. page is that page number. label is a short locator such as "Results" or "Table 2" when the surrounding text supports it, otherwise "".
 - Do not cite a page you cannot quote.
-- Be concise. Match the amount of detail to the request. Use short markdown when it makes the answer easier to scan.
-- Write fractions, equations, and symbols as LaTeX. Inline math uses single dollar signs, for example $\\frac{2}{3}$. Display equations use double dollar signs.
-- When only some pages are included, do not treat the missing pages as empty.`;
+- Paper facts stay separate from your own reasoning. Never write a judgment as if the authors stated it.`;
 
 export function retrievalQuery(kind: ArtifactKind): string {
   switch (kind) {
     case "insights":
       return "research question contribution method dataset findings limitations results conclusion";
     case "summary-quick":
-      return "abstract introduction conclusion contribution";
+      return "abstract introduction conclusion contribution findings";
     case "summary-detailed":
-      return "research question motivation methodology data results conclusions";
+      return "research question motivation methodology data results conclusions tables limitations";
     case "summary-executive":
-      return "findings contribution results conclusion";
+      return "findings contribution results conclusion risk cost";
     case "summary-eli5":
-      return "abstract introduction method results";
+      return "section method results discussion conclusion tables figures limitations handwritten";
     case "analysis":
       return "limitations discussion method results assumptions baselines";
     default: {
@@ -213,14 +222,15 @@ export function retrievalQuery(kind: ArtifactKind): string {
 
 function toneInstruction(tone: SummaryTone): string {
   switch (tone) {
-    case "plain":
-      return "Tone: plain. Write in everyday language and define jargon in the same sentence.";
     case "academic":
-      return "Tone: academic. Use formal research prose and keep the paper's terms.";
     case "technical":
-      return "Tone: technical. Be precise. Keep methods, notation, and quantitative claims.";
+      return "Tone: Academic/Technical. Use precise terminology, keep the methodology, and stay analytically dense.";
+    case "executive":
+      return "Tone: C-Suite / Executive. Lead with outcomes, cost, and risk in actionable language. Stay inside the document.";
+    case "simplified":
+    case "plain":
     case "conversational":
-      return "Tone: conversational. Write as if briefing a colleague out loud. Stay accurate to the paper.";
+      return "Tone: Simplified / Layperson. Use clear language without jargon. Define a necessary term in the same sentence. Do not add outside background.";
     default: {
       const unreachable: never = tone;
       return unreachable;
@@ -228,10 +238,44 @@ function toneInstruction(tone: SummaryTone): string {
   }
 }
 
-function summaryStyle(kind: ArtifactKind, settings?: SummarySettings): string {
+function outputArchitecture(kind: ArtifactKind, settings?: SummarySettings): string {
   if (!isSummaryKind(kind)) return "";
-  const resolved = settings ?? { words: defaultWordsForKind(kind), tone: "plain" as const };
-  return `Length: about ${resolved.words} words. Stay within roughly 15 percent of that count.\n${toneInstruction(resolved.tone)}`;
+  const resolved = settings ?? {
+    words: defaultWordsForKind(kind),
+    tone: "academic" as const,
+    focus: "",
+  };
+  const questions = resolved.focus.trim();
+  const questionBlock = questions
+    ? `The user provided questions. Answer them first under "## Answers to User Specific Questions". Format each as "- **Q:** ..." then "  - **A:** ..." with a page citation. If a question is not in the document, the answer is exactly: "${MISSING_LINE}"\n\nUSER QUESTIONS\n${questions}`
+    : `The user did not provide a question. Omit "## Answers to User Specific Questions".`;
+  const depth =
+    kind === "summary-quick"
+      ? "Length band: Brief. Keep Executive Overview, Key Takeaways, and Critical Appraisal tight. Add other sections only when the document has that material."
+      : kind === "summary-eli5"
+        ? "Length band: Comprehensive. Use every applicable section, with a deep section-by-section breakdown."
+        : "Length band: Standard. Cover every applicable section in compact paragraphs.";
+
+  return `${questionBlock}
+
+Put the summary in answerMarkdown using this schema, in this order. Skip a section only when the document has nothing for it.
+## Executive Overview
+## Key Takeaways
+- **[Core theme]:** finding. [Page X]
+## Critical Appraisal (Pros, Cons & Methodological Analysis)
+- **Strengths & Advantages:** ... [Page X]
+- **Limitations & Disadvantages:** ... [Page Y]
+## Digitized Handwritten & Marginalia Extracts
+- **[Page X]:** digitized note or equation.
+## Section-by-Section Breakdown
+### [Section title]
+## Key Metrics & Extracted Tables
+- **[Metric]:** value (Source: Table/Chart on Page X)
+
+analysisMarkdown must be "".
+${depth}
+${toneInstruction(resolved.tone)}
+Length: about ${resolved.words} words. Stay within roughly 15 percent of that count. Heading lines do not count.`;
 }
 
 export function artifactInstruction(
@@ -243,41 +287,20 @@ export function artifactInstruction(
     source === "text"
       ? "This document was pasted. Every citation uses page 1. Put a section name in label when one is visible."
       : "";
-  const style = summaryStyle(kind, settings);
+  const architecture = outputArchitecture(kind, settings);
 
   switch (kind) {
     case "insights":
-      return `Fill every field in plain language a reader can scan. Each field is one to three sentences. If the paper does not state it, write "Not stated in this paper."
-citations is an array. Each item's field is one of: researchQuestion, contribution, method, dataset, findings, limitations, numbers, conclusion. Only include a citation when you can quote that field from the paper.
-numbers lists important quantitative results that appear in the paper, or "Not stated in this paper."
-coverage is grounded when the main fields are supported, partial when several are missing, and not_in_paper only if this is not a research paper.
+      return `Fill every field so a reader can scan it. Each field is one to three sentences and ends important claims with [Page X]. If the document does not state it, write "${MISSING_LINE}"
+citations is an array. Each item's field is one of: researchQuestion, contribution, method, dataset, findings, limitations, numbers, conclusion. Only include a citation when you can quote that field from the document.
+numbers lists important quantitative results that appear in the document, or "${MISSING_LINE}"
+coverage is grounded when the main fields are supported, partial when several are missing, and not_in_paper only if the document does not support an overview.
 ${pasted}`;
     case "summary-quick":
-      return `Write a short explanation. Start with the point of the paper, then how they studied it, then what they found. analysisMarkdown must be "".
-${style}
-${pasted}`;
     case "summary-detailed":
-      return `Write a detailed summary with these markdown headings, in this order:
-## Research question
-## Motivation
-## Methodology
-## Data
-## Results
-## Conclusions
-Under each heading, write only as much as the length allows. If that part is not in the paper, say so under the heading. The word count covers the whole summary, excluding the heading lines. analysisMarkdown must be "".
-${style}
-${pasted}`;
     case "summary-executive":
-      return `Write a brief for someone who needs the paper quickly. Use these headings:
-## What they did
-## What they found
-## Why it matters
-The word count covers the whole brief, excluding the heading lines. analysisMarkdown must be "".
-${style}
-${pasted}`;
     case "summary-eli5":
-      return `Explain the paper without assuming advanced knowledge. Define necessary jargon in the same sentence. Stay accurate to the paper. Do not add textbook background the paper does not need. analysisMarkdown must be "".
-${style}
+      return `${architecture}
 ${pasted}`;
     case "analysis":
       return `Assess the paper.
@@ -298,9 +321,11 @@ export function chatInstruction(source: PaperSource): string {
     source === "text"
       ? "This document was pasted. Every citation uses page 1. Put a section name in label when one is visible."
       : "Cite the page the quote comes from.";
-  return `Answer the reader's question about this paper.
-Put what the paper says in answerMarkdown. Put hypotheticals, extrapolation, and your own judgment in analysisMarkdown. If you have no analysis, set analysisMarkdown to "".
-If the question asks whether a method would work somewhere else, keep the paper's facts and your speculation in those two fields.
+  return `Answer the reader's question about this document.
+If the document does not contain the answer, set answerMarkdown to exactly "${MISSING_LINE}" and coverage to "not_in_paper".
+Put what the document says in answerMarkdown. End every key claim with [Page X] or [Pages X-Y].
+Put hypotheticals, extrapolation, and your own judgment in analysisMarkdown. If you have no analysis, set analysisMarkdown to "".
+If the question asks whether a method would work somewhere else, keep the document's facts and your speculation in those two fields.
 ${pasted}`;
 }
 
@@ -332,7 +357,8 @@ export function parseArtifact(value: unknown): Artifact | null {
         words:
           artifact.words ??
           clampWords(countWords(artifact.answer.answerMarkdown), defaultWordsForKind(artifact.kind)),
-        tone: artifact.tone ?? "plain",
+        tone: artifact.tone ?? "academic",
+        focus: artifact.focus ?? "",
       };
     default: {
       const unreachable: never = artifact;
@@ -392,7 +418,7 @@ export function readModelAnswer(value: unknown): ModelAnswer {
   const answerMarkdown = typeof record.answerMarkdown === "string" ? record.answerMarkdown.trim() : "";
   const analysisRaw = typeof record.analysisMarkdown === "string" ? record.analysisMarkdown.trim() : "";
   return {
-    answerMarkdown: answerMarkdown || "Not stated in this paper.",
+    answerMarkdown: answerMarkdown || MISSING_LINE,
     analysisMarkdown: analysisRaw || null,
     citations: readCitations(record.citations),
     coverage: readCoverage(record.coverage),
@@ -423,7 +449,7 @@ export function readModelInsights(value: unknown): {
       const body = record[key];
       return {
         key,
-        body: typeof body === "string" && body.trim() ? body.trim() : "Not stated in this paper.",
+        body: typeof body === "string" && body.trim() ? body.trim() : MISSING_LINE,
         citations: grouped.get(key) ?? [],
       };
     }),

@@ -17,7 +17,7 @@ export function PastePanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="cursor-pointer text-sm text-accent"
+        className="cursor-pointer text-sm font-semibold text-accent underline-offset-4 hover:underline"
       >
         Paste text instead
       </button>
@@ -26,7 +26,7 @@ export function PastePanel({
 
   return (
     <form
-      className="flex flex-col gap-3"
+      className="tool-card flex flex-col gap-3 p-4"
       onSubmit={(event) => {
         event.preventDefault();
         onPaste(text);
@@ -35,22 +35,18 @@ export function PastePanel({
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}
-        placeholder="Paste the paper text"
-        rows={10}
-        className="w-full resize-y rounded-2xl border border-line bg-surface px-4 py-3 text-sm leading-6 outline-none focus:border-accent"
+        placeholder="Paste the document text"
+        rows={8}
+        className="w-full resize-y rounded-xl border-2 border-line bg-surface px-4 py-3 text-sm leading-6 text-ink outline-none focus:border-accent"
       />
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="cursor-pointer text-sm text-muted"
-        >
+        <button type="button" onClick={() => setOpen(false)} className="cursor-pointer text-sm font-semibold text-ink">
           Cancel
         </button>
         <button
           type="submit"
           disabled={disabled || text.trim().length < 80}
-          className="h-10 cursor-pointer rounded-full bg-accent px-4 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="h-10 cursor-pointer rounded-full bg-accent px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(208,0,0,0.28)] transition hover:bg-[#b00000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Use this text
         </button>

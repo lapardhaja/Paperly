@@ -1,6 +1,6 @@
 # Paperly
 
-Local reader for one research paper at a time. Drop in a PDF or paste the text, then ask questions, read a summary, or check strengths and weaknesses. Answers stay tied to quotes from that paper.
+Local reader for one document at a time. Drop in a PDF or paste the text, then get a cited summary, ask questions, or check strengths and weaknesses. Answers stay tied to quotes from that document.
 
 There are no accounts. Papers live on disk on the machine running the app. When you generate or ask, the extracted text is sent to Google Gemini.
 
@@ -8,7 +8,7 @@ There are no accounts. Papers live on disk on the machine running the app. When 
 
 - Upload a PDF (up to 50 MB and 1,000 pages) or paste text (at least 80 characters).
 - Read an overview: research question, contribution, method, dataset, findings, limitations, numbers, and conclusion.
-- Generate four summaries: Quick, Detailed, Executive, and Explain like I'm new. Set the length (50–2,000 words) and the tone (Plain, Academic, Technical, Conversational), then rewrite.
+- Generate a structured summary: Brief (~250 words), Standard (~650), or Comprehensive (~1,400). Set the length (50–2,000 words) and the tone (Academic / Technical, C-Suite / Executive, Simplified / Layperson), add optional focus questions, then rewrite. The summary follows a fixed schema: executive overview, takeaways, critical appraisal, digitized handwriting, section breakdown, and extracted metrics, with `[Page X]` on each claim.
 - Ask for strengths, limitations the authors actually wrote, and a separate Paperly analysis that is labeled as judgment rather than a claim from the paper.
 - Chat about the paper. The last 12 turns are sent as conversation context. Earlier answers are not treated as evidence.
 - Open the PDF beside the answer. The pane starts around 880px wide, drags out to 1,200px, and zooms from 75% to 250%.
