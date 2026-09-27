@@ -408,22 +408,10 @@ body:has(.landing-stage) {
   position: absolute;
   inset: 0;
   transform-origin: left center;
-  border: 1px solid color-mix(in srgb, #0f172a 12%, #ffffff);
+  border: 1px solid #6366f1;
   border-radius: 1px 7px 7px 1px;
-  background: linear-gradient(90deg, #ede9fe 0 4%, #ffffff 4%);
-  transition:
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    background 0.45s ease,
-    border-color 0.45s ease;
-}
-
-.book:not(.is-open):not(.is-paste):not(.is-reading) .leaf-sheet {
-  border-color: #6366f1;
   background: linear-gradient(165deg, #6366f1, #3b82f6);
-}
-
-.book:not(.is-open):not(.is-paste):not(.is-reading) .leaf-sheet span {
-  background: transparent;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .leaf-sheet span {
@@ -431,7 +419,7 @@ body:has(.landing-stage) {
   height: 1.5%;
   margin: 7% 8% 0 12%;
   border-radius: 999px;
-  background: color-mix(in srgb, #6366f1 22%, #ffffff);
+  background: transparent;
 }
 
 .leaf-sheet span:nth-child(2) { width: 72%; }
@@ -512,28 +500,9 @@ body:has(.landing-stage) {
   justify-content: center;
   gap: 10px;
   transform: rotateY(180deg);
-  border: 1px solid color-mix(in srgb, #6366f1 35%, #ffffff);
-  background:
-    linear-gradient(90deg, #6366f1 0 18px, transparent 18px),
-    linear-gradient(165deg, #ede9fe, #ffffff 55%);
-  color: #0f172a;
-}
-
-.cover-inside .cover-seal {
-  border-color: #6366f1;
-  color: #6366f1;
-}
-
-.cover-inside .cover-title {
-  color: #0f172a;
-}
-
-.cover-inside .cover-rule {
-  background: #6366f1;
-}
-
-.cover-inside .cover-sub {
-  color: #0f172a;
+  border: 1px solid #6366f1;
+  background: linear-gradient(165deg, #6366f1, #3b82f6);
+  color: #ffffff;
 }
 
 .cover-seal {
