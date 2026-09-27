@@ -228,28 +228,55 @@ body:has(.landing-stage) {
   letter-spacing: -0.03em;
 }
 
-.paste-sheet {
+.page-write {
   position: absolute;
-  z-index: 5;
-  top: 50%;
-  left: 58%;
+  z-index: 3;
+  top: 8px;
+  right: 3px;
+  bottom: 8px;
+  left: 10px;
+  transform: translateZ(8px);
+  pointer-events: auto;
+  border-radius: 1px 7px 7px 1px;
+  background: linear-gradient(90deg, #ede9fe 0 5%, #ffffff 5%);
+}
+
+.page-form {
   display: flex;
-  width: min(30vw, 390px);
-  height: min(56vh, 500px);
-  transform: translate(-18%, -50%);
+  height: 100%;
+  min-height: 0;
   flex-direction: column;
-  gap: 0.65rem;
-  border: 1px solid color-mix(in srgb, #6366f1 28%, #ffffff);
-  border-radius: 2px 12px 12px 2px;
-  background:
-    repeating-linear-gradient(
-      180deg,
-      transparent 0 26px,
-      color-mix(in srgb, #6366f1 14%, #ffffff) 27px
-    ),
-    linear-gradient(90deg, #ede9fe 0 14px, #ffffff 14px);
-  padding: 1rem 0.95rem 0.85rem 1.35rem;
-  box-shadow: 0 24px 50px color-mix(in srgb, #6366f1 24%, transparent);
+  gap: 0.6rem;
+  padding: 7% 6% 4% 9%;
+}
+
+.page-form textarea {
+  min-height: 0;
+  flex: 1;
+  width: 100%;
+  resize: none;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  outline: none;
+}
+
+.page-form textarea::placeholder {
+  color: color-mix(in srgb, #0f172a 45%, #ffffff);
+}
+
+.page-form-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.book.is-paste .book-cover {
+  pointer-events: none;
 }
 
 .book-stage {
@@ -308,14 +335,6 @@ body:has(.landing-stage) {
     width: min(68vw, 300px);
     height: min(36vh, 320px);
     margin-left: 0;
-  }
-
-  .paste-sheet {
-    top: 54%;
-    left: 50%;
-    width: min(78vw, 320px);
-    height: min(32vh, 280px);
-    transform: translate(-42%, -50%);
   }
 
   .drop-well {
@@ -402,8 +421,9 @@ body:has(.landing-stage) {
   transform: rotateY(-64deg);
 }
 
-.book.is-paste .leaf-1 .leaf-sheet {
-  transform: rotateY(-10deg);
+.book.is-paste .leaf-1 .leaf-sheet,
+.book.is-paste .leaf-2 .leaf-sheet {
+  transform: none;
 }
 
 .book.is-reading .book-cover {

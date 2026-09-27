@@ -4,8 +4,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { DocumentScene, type BookIntent } from "@/components/DocumentScene";
 
-const MIN_PASTE = 80;
-
 export function UploadDropzone({
   disabled,
   error,
@@ -41,7 +39,8 @@ export function UploadDropzone({
   }, [paste]);
 
   const intent: BookIntent = active ? "open" : paste ? "paste" : "rest";
-  const ready = text.trim().length >= MIN_PASTE;
+  const trimmed = text.trim();
+  const words = trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
 
   function takeFiles(files: FileList | null | undefined) {
     if (!files || files.length === 0) return;
@@ -61,7 +60,43 @@ export function UploadDropzone({
     setPaste(true);
   }
 
-  const scene = <DocumentScene intent={intent} />;
+  const scene = (
+    <DocumentScene
+      intent={intent}
+      page={
+        paste ? (
+          <form
+            className="page-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (trimmed.length > 0) onPaste(text);
+            }}
+          >
+            <textarea
+              ref={areaRef}
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Paste the document on this page"
+              aria-label="Document text"
+            />
+            <div className="page-form-bar">
+              <p className="text-xs font-semibold text-ink">
+                {words === 0 ? "The whole document" : `${words.toLocaleString()} words`}
+              </p>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setPaste(false)} className="cursor-pointer text-sm font-semibold text-ink">
+                  Close
+                </button>
+                <button type="submit" disabled={disabled || trimmed.length === 0} className="btn-primary h-9 px-4 text-sm">
+                  Analyze
+                </button>
+              </div>
+            </div>
+          </form>
+        ) : null
+      }
+    />
+  );
   const well = active ? (
     <div className="drop-well">
       <span className="drop-well-kicker">Into the book</span>
@@ -122,44 +157,7 @@ export function UploadDropzone({
       className={`stage-drop ${active ? "is-active" : ""} ${paste ? "is-paste" : ""}`}
     >
       {paste ? (
-        <div className="book-column is-editing">
-          {scene}
-          <form
-            className="paste-sheet"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (ready) onPaste(text);
-            }}
-          >
-            <p className="text-xs font-bold tracking-[0.16em] text-ink uppercase">Paste in the book</p>
-            <textarea
-              ref={areaRef}
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              placeholder="Paste the document here"
-              aria-label="Document text"
-              className="w-full flex-1 resize-none bg-transparent text-sm leading-6 text-ink outline-none placeholder:text-muted"
-            />
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold text-ink">
-                <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${ready ? "bg-mint" : "bg-line"}`} />
-                {ready ? "Ready to analyze" : `${text.trim().length}/80`}
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaste(false)}
-                  className="cursor-pointer text-sm font-semibold text-ink"
-                >
-                  Close
-                </button>
-                <button type="submit" disabled={disabled || !ready} className="btn-primary h-10 px-4 text-sm">
-                  Analyze
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
+        <div className="book-column is-editing">{scene}</div>
       ) : (
         <button
           type="button"
@@ -178,7 +176,7 @@ export function UploadDropzone({
         </h1>
         <p className="mt-4 max-w-md text-base leading-7 text-muted sm:text-lg">
           {paste
-            ? "The page is open. Paste the text, then analyze."
+            ? "The page is open. Paste as much of the document as you have, then analyze."
             : "The book stays closed until a document goes in. Drop a PDF on the cover, or open it to paste."}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4">

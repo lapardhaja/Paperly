@@ -6,7 +6,7 @@ There are no accounts. Papers live on disk on the machine running the app. When 
 
 ## What you can do
 
-- Upload a PDF (up to 50 MB and 1,000 pages) or paste text (at least 80 characters).
+- Upload a PDF (up to 50 MB and 1,000 pages) or paste text (up to 8 million characters).
 - Read an overview: research question, contribution, method, dataset, findings, limitations, numbers, and conclusion.
 - Generate a structured summary: Brief (~250 words), Standard (~650), or Comprehensive (~1,400). Set the length (50–2,000 words) and the tone (Academic / Technical, C-Suite / Executive, Simplified / Layperson), add optional focus questions, then rewrite. The summary follows a fixed schema: executive overview, takeaways, critical appraisal, digitized handwriting, section breakdown, and extracted metrics, with `[Page X]` on each claim.
 - Ask for strengths, limitations the authors actually wrote, and a separate Paperly analysis that is labeled as judgment rather than a claim from the paper.

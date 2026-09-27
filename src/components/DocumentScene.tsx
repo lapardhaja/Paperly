@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 const REST = { x: 8, y: -22 };
 const CALM = { x: 5, y: -16 };
@@ -9,7 +9,7 @@ const LEAVES = ["leaf-1", "leaf-2", "leaf-3", "leaf-4"] as const;
 
 export type BookIntent = "rest" | "open" | "paste" | "reading";
 
-export function DocumentScene({ intent = "rest" }: { intent?: BookIntent }) {
+export function DocumentScene({ intent = "rest", page }: { intent?: BookIntent; page?: ReactNode }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const intentRef = useRef(intent);
   const [tilt, setTilt] = useState(REST);
@@ -63,7 +63,7 @@ export function DocumentScene({ intent = "rest" }: { intent?: BookIntent }) {
   const style = { "--book-rx": `${posedTilt.x}deg`, "--book-ry": `${posedTilt.y}deg` } as CSSProperties;
 
   return (
-    <div ref={stageRef} className="book-stage" style={style} aria-hidden>
+    <div ref={stageRef} className="book-stage" style={style} aria-hidden={page ? undefined : true}>
       <div className={`book${posed}`}>
         <div className="book-spine" />
         {LEAVES.map((leaf) => (
@@ -76,6 +76,7 @@ export function DocumentScene({ intent = "rest" }: { intent?: BookIntent }) {
             </div>
           </div>
         ))}
+        {page ? <div className="page-write">{page}</div> : null}
         <div className="scan-plane" />
         <div className="book-cover">
           <div className="cover-face">
