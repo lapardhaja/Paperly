@@ -3,26 +3,42 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 const REST = { x: 8, y: -22 };
+const CALM = { x: 5, y: -16 };
 
 const LEAVES = ["leaf-1", "leaf-2", "leaf-3", "leaf-4"] as const;
 
-export function DocumentScene({ open, reading = false }: { open: boolean; reading?: boolean }) {
+export type BookIntent = "rest" | "near" | "open" | "paste" | "reading";
+
+export function DocumentScene({ intent = "rest" }: { intent?: BookIntent }) {
   const stageRef = useRef<HTMLDivElement>(null);
+  const intentRef = useRef(intent);
   const [tilt, setTilt] = useState(REST);
+  const posedTilt = intent === "paste" || intent === "reading" ? CALM : tilt;
 
   useEffect(() => {
-    const parent = stageRef.current?.parentElement;
+    intentRef.current = intent;
+  }, [intent]);
+
+  useEffect(() => {
+    const parent = stageRef.current?.parentElement?.closest(".stage-drop");
     if (!parent) return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reduced = media.matches;
 
-    const rest = () => setTilt(REST);
+    const rest = () => {
+      if (intentRef.current === "paste" || intentRef.current === "reading") setTilt(CALM);
+      else setTilt(REST);
+    };
     const onChange = () => {
       reduced = media.matches;
       if (reduced) rest();
     };
     const move = (event: PointerEvent) => {
       if (reduced) return;
+      if (intentRef.current === "paste" || intentRef.current === "reading") {
+        setTilt(CALM);
+        return;
+      }
       const rect = parent.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
       const px = (event.clientX - rect.left) / rect.width - 0.5;
@@ -43,12 +59,12 @@ export function DocumentScene({ open, reading = false }: { open: boolean; readin
     };
   }, []);
 
-  const turned = open || reading;
-  const style = { "--book-rx": `${tilt.x}deg`, "--book-ry": `${tilt.y}deg` } as CSSProperties;
+  const posed = intent === "rest" ? "" : ` is-${intent}`;
+  const style = { "--book-rx": `${posedTilt.x}deg`, "--book-ry": `${posedTilt.y}deg` } as CSSProperties;
 
   return (
     <div ref={stageRef} className="book-stage" style={style} aria-hidden>
-      <div className={`book${turned ? " is-open" : ""}${reading ? " is-reading" : ""}`}>
+      <div className={`book${posed}`}>
         <div className="book-spine" />
         {LEAVES.map((leaf) => (
           <div key={leaf} className={`book-leaf ${leaf}`}>

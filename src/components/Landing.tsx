@@ -5,43 +5,8 @@ import { useState } from "react";
 
 import { BrandLockup } from "@/components/BrandMark";
 import { DocumentScene } from "@/components/DocumentScene";
-import { PastePanel } from "@/components/PastePanel";
 import { UploadDropzone } from "@/components/UploadDropzone";
 import { Waiting } from "@/components/Waiting";
-
-const STEPS = [
-  {
-    title: "Drop a PDF",
-    body: "One file, up to 50 MB. Native text, scans, and handwritten pages all go in the same box.",
-  },
-  {
-    title: "Paperly reads it",
-    body: "Text, tables, equations, and handwriting are digitized before anything is summarized.",
-  },
-  {
-    title: "Get a cited summary",
-    body: "Brief, standard, or comprehensive. Every claim ends with the page it came from.",
-  },
-] as const;
-
-const FEATURES = [
-  {
-    title: "Page citations",
-    body: "Claims, metrics, and quotes stay tied to [Page X]. A quote that is not in the file is dropped.",
-  },
-  {
-    title: "Handwriting",
-    body: "Scanned notes and marginalia come back as Markdown and LaTeX, labeled with the page.",
-  },
-  {
-    title: "Tone and length",
-    body: "Academic, executive, or plain language. About 250, 650, or 1,400 words.",
-  },
-  {
-    title: "Ask the document",
-    body: "Follow-up questions are answered from the file. If it is not in there, Paperly says so.",
-  },
-] as const;
 
 const READ_STEPS = [
   "Taking in the document",
@@ -60,7 +25,7 @@ export function Landing() {
   async function upload(file: File) {
     if (busy) return;
     if (file.type && file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setError("That file is not a PDF. Paste the text instead.");
+      setError("That file is not a PDF. Open the book and paste the text.");
       return;
     }
     setError(null);
@@ -105,54 +70,28 @@ export function Landing() {
       </header>
       {busy ? (
         <div className="stage-drop">
-          <DocumentScene open reading />
+          <div className="book-column">
+            <DocumentScene intent="reading" />
+          </div>
           <div className="stage-copy">
-            <p className="kicker text-accent">READ LESS. THINK MORE.</p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-tight text-ink sm:text-6xl">Reading the document</h1>
-            <div className="mt-6">
-              <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
+            <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
+            <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-ink">
+              Reading the document
+            </h1>
+            <div className="mt-5 max-w-md">
+              <Waiting compact title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
             </div>
           </div>
         </div>
       ) : (
-        <UploadDropzone disabled={busy} onFile={(file) => void upload(file)} onReject={setError} />
+        <UploadDropzone
+          disabled={busy}
+          error={error}
+          onFile={(file) => void upload(file)}
+          onPaste={(text) => void paste(text)}
+          onReject={setError}
+        />
       )}
-      <section className="stage-lower">
-        <div className="mx-auto flex max-w-6xl justify-center">
-          <PastePanel
-            disabled={busy}
-            onPaste={(text) => void paste(text)}
-            buttonClassName="cursor-pointer text-sm font-semibold text-ink underline decoration-[#6366F1] underline-offset-4 hover:text-accent"
-          />
-        </div>
-        {error ? <p className="banner-warn mx-auto mt-4 max-w-6xl px-4 py-3">{error}</p> : null}
-        <div className="mx-auto mt-16 max-w-6xl">
-          <p className="kicker text-center text-ink">How it works</p>
-          <h2 className="mt-2 text-center text-4xl font-semibold tracking-tight text-ink">Summarize a PDF in three steps</h2>
-          <ol className="mt-8 grid gap-4 sm:grid-cols-3">
-            {STEPS.map((step, index) => (
-              <li key={step.title} className="lift hoban-card rounded-2xl p-5">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#6366F1] text-sm font-bold text-white">
-                  {index + 1}
-                </span>
-                <h3 className="mt-3 text-xl font-semibold tracking-tight">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {FEATURES.map((feature) => (
-              <article key={feature.title} className="lift hoban-card rounded-2xl p-5">
-                <h3 className="text-xl font-semibold tracking-tight">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{feature.body}</p>
-              </article>
-            ))}
-          </div>
-          <p className="mt-10 text-center text-xs leading-5 text-muted">
-            The file stays on this computer. When you summarize or ask, the document text is sent to Google Gemini.
-          </p>
-        </div>
-      </section>
     </div>
   );
 }
