@@ -7,7 +7,7 @@ const CALM = { x: 5, y: -16 };
 
 const LEAVES = ["leaf-1", "leaf-2", "leaf-3", "leaf-4"] as const;
 
-export type BookIntent = "rest" | "near" | "open" | "paste" | "reading";
+export type BookIntent = "rest" | "open" | "paste" | "reading";
 
 export function DocumentScene({ intent = "rest" }: { intent?: BookIntent }) {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -76,6 +76,7 @@ export function DocumentScene({ intent = "rest" }: { intent?: BookIntent }) {
             </div>
           </div>
         ))}
+        <div className="scan-plane" />
         <div className="book-cover">
           <div className="cover-face">
             <span className="cover-seal">P</span>

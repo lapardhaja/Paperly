@@ -30,7 +30,7 @@ export function Landing() {
     }
     setError(null);
     setFileLabel(file.name);
-    setStatus("Reading the PDF…");
+    setStatus("Scanning the PDF…");
     const body = new FormData();
     body.set("file", file);
     const response = await fetch("/api/papers", { method: "POST", body });
@@ -47,7 +47,7 @@ export function Landing() {
     if (busy) return;
     setError(null);
     setFileLabel("Pasted text");
-    setStatus("Reading the text…");
+    setStatus("Analyzing the text…");
     const response = await fetch("/api/papers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -76,7 +76,7 @@ export function Landing() {
           <div className="stage-copy">
             <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
             <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-ink">
-              Reading the document
+              Scanning the pages
             </h1>
             <div className="mt-5 max-w-md">
               <Waiting compact title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />

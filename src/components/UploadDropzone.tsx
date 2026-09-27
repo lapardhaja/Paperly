@@ -24,7 +24,6 @@ export function UploadDropzone({
   const depth = useRef(0);
   const dragged = useRef(false);
   const [active, setActive] = useState(false);
-  const [near, setNear] = useState(false);
   const [paste, setPaste] = useState(false);
   const [text, setText] = useState("");
 
@@ -41,7 +40,7 @@ export function UploadDropzone({
     return () => window.removeEventListener("keydown", onKey);
   }, [paste]);
 
-  const intent: BookIntent = active ? "open" : paste ? "paste" : near ? "near" : "rest";
+  const intent: BookIntent = active ? "open" : paste ? "paste" : "rest";
   const ready = text.trim().length >= MIN_PASTE;
 
   function takeFiles(files: FileList | null | undefined) {
@@ -132,7 +131,7 @@ export function UploadDropzone({
               if (ready) onPaste(text);
             }}
           >
-            <p className="text-xs font-bold tracking-[0.16em] text-ink uppercase">On the page</p>
+            <p className="text-xs font-bold tracking-[0.16em] text-ink uppercase">Paste in the book</p>
             <textarea
               ref={areaRef}
               value={text}
@@ -144,7 +143,7 @@ export function UploadDropzone({
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold text-ink">
                 <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${ready ? "bg-mint" : "bg-line"}`} />
-                {ready ? "Ready to read" : `${text.trim().length}/80`}
+                {ready ? "Ready to analyze" : `${text.trim().length}/80`}
               </p>
               <div className="flex items-center gap-3">
                 <button
@@ -155,7 +154,7 @@ export function UploadDropzone({
                   Close
                 </button>
                 <button type="submit" disabled={disabled || !ready} className="btn-primary h-10 px-4 text-sm">
-                  Read this
+                  Analyze
                 </button>
               </div>
             </div>
@@ -166,9 +165,7 @@ export function UploadDropzone({
           type="button"
           className="book-column"
           onClick={openPaste}
-          onPointerEnter={() => setNear(true)}
-          onPointerLeave={() => setNear(false)}
-          aria-label="Open the book and paste text. You can also drop a PDF on it."
+          aria-label="Closed Paperly book. Click to paste inside it, or drop a PDF on it."
         >
           {scene}
           {well}
@@ -177,12 +174,12 @@ export function UploadDropzone({
       <div className="stage-copy">
         <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
         <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-balance text-ink">
-          {active ? "Release it into the book" : paste ? "Paste onto the page" : "Drop it in the book"}
+          {active ? "Release it into the book" : paste ? "Paste it in the book" : "Drop it in the book"}
         </h1>
         <p className="mt-4 max-w-md text-base leading-7 text-muted sm:text-lg">
           {paste
-            ? "The page is open. Paste a paper, notes, or a scan transcript."
-            : "Drag a PDF onto the book. Or click it and paste the text onto the open page."}
+            ? "The page is open. Paste the text, then analyze."
+            : "The book stays closed until a document goes in. Drop a PDF on the cover, or open it to paste."}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
