@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="512" height="512">
+  <defs>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Back paper layer -->
+  <path d="M55 45 
+           C55 35, 65 28, 78 28
+           L125 28
+           C140 28, 152 40, 152 55
+           L152 130
+           C152 145, 140 155, 125 155
+           L78 155
+           C65 155, 55 145, 55 130
+           Z" 
+        fill="#1E293B" opacity="0.7"/>
+  
+  <!-- Main paper body forming stylized P -->
+  <path d="M48 40 
+           C48 30, 58 22, 72 22
+           L118 22
+           C138 22, 155 38, 155 58
+           L155 95
+           C155 115, 142 128, 125 132
+           L95 140
+           L95 155
+           C95 162, 88 168, 80 168
+           L65 168
+           C55 168, 48 160, 48 150
+           Z" 
+        fill="#0F172A"/>
+  
+  <!-- Inner fold highlight -->
+  <path d="M72 40 
+           L118 40
+           C130 40, 140 50, 140 62
+           L140 95
+           C140 108, 130 118, 118 120
+           L90 128
+           L90 55
+           C90 45, 82 40, 72 40
+           Z" 
+        fill="#FFFFFF" opacity="0.15"/>
+  
+  <!-- Neural network dots and lines -->
+  <g opacity="0.85">
+    <line x1="125" y1="55" x2="145" y2="45" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="130" y1="75" x2="155" y2="70" stroke="#64748B" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="128" y1="95" x2="150" y2="100" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="120" y1="115" x2="142" y2="125" stroke="#64748B" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="145" y1="45" x2="155" y2="70" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="155" y1="70" x2="150" y2="100" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="150" y1="100" x2="142" y2="125" stroke="#94A3B8" stroke-width="1" stroke-linecap="round"/>
+    
+    <circle cx="125" cy="55" r="3" fill="#94A3B8"/>
+    <circle cx="145" cy="45" r="2.5" fill="#CBD5E1"/>
+    <circle cx="130" cy="75" r="2.8" fill="#94A3B8"/>
+    <circle cx="155" cy="70" r="3.2" fill="#CBD5E1"/>
+    <circle cx="128" cy="95" r="2.5" fill="#94A3B8"/>
+    <circle cx="150" cy="100" r="2.8" fill="#CBD5E1"/>
+    <circle cx="120" cy="115" r="2.2" fill="#94A3B8"/>
+    <circle cx="142" cy="125" r="2.5" fill="#CBD5E1"/>
+  </g>
+  
+  <!-- Sparkle star -->
+  <g transform="translate(148, 32)">
+    <path d="M0,-10 L2.5,-2.5 L10,0 L2.5,2.5 L0,10 L-2.5,2.5 L-10,0 L-2.5,-2.5 Z" fill="#0F172A"/>
+  </g>
+  
+  <!-- Small secondary sparkle -->
+  <g transform="translate(165, 55)" opacity="0.6">
+    <path d="M0,-5 L1.2,-1.2 L5,0 L1.2,1.2 L0,5 L-1.2,1.2 L-5,0 L-1.2,-1.2 Z" fill="#64748B"/>
+  </g>
+</svg>

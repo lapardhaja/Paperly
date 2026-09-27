@@ -1,28 +1,29 @@
 import type { Metadata } from "next";
-import { Libre_Baskerville, Public_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const libre = Libre_Baskerville({
-  variable: "--font-libre",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
   title: "Paperly",
-  description: "Summarize PDFs, scans, and handwritten notes with page citations.",
+  description: "READ LESS. THINK MORE. Summarize PDFs, scans, and handwritten notes with page citations.",
+  icons: {
+    icon: [
+      { url: "/brand/paperly-app-icon-light.svg", media: "(prefers-color-scheme: light)" },
+      { url: "/brand/paperly-app-icon-dark.svg", media: "(prefers-color-scheme: dark)" },
+    ],
+    apple: "/brand/paperly-app-icon-light.svg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${publicSans.variable} ${libre.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-paper text-ink">{children}</body>
     </html>
   );

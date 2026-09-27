@@ -39,7 +39,7 @@ export function ChatThread({
     <div className="flex flex-col gap-6">
       {messages.map((message) =>
         message.role === "user" ? (
-          <div key={message.id} className="ml-auto max-w-[85%] rounded-2xl border border-line bg-accent-soft px-4 py-3 shadow-[0_8px_20px_rgba(21,40,71,0.06)]">
+          <div key={message.id} className="ml-auto max-w-[85%] rounded-2xl border border-line bg-accent-soft px-4 py-3 shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
             <p className="text-[15px] leading-7 font-medium whitespace-pre-wrap">{message.content}</p>
           </div>
         ) : (

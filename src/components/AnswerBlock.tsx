@@ -23,7 +23,7 @@ export function AnswerBlock({
       </p>
       <MarkdownView text={answer.answerMarkdown} />
       {answer.analysisMarkdown ? (
-        <div className="mt-6 rounded-2xl border border-[#e4b4b2] bg-[#fdf3f2] px-4 py-4">
+        <div className="mt-6 rounded-2xl border border-line bg-accent-soft px-4 py-4">
           <p className="text-xs font-bold tracking-[0.14em] text-warn uppercase">Paperly&apos;s analysis</p>
           <p className="mt-1 text-xs font-semibold text-ink">This is not a statement from the document.</p>
           <div className="mt-3">

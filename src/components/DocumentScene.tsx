@@ -65,7 +65,7 @@ export function DocumentScene({ open, reading = false }: { open: boolean; readin
             <span className="cover-seal">P</span>
             <span className="cover-title">Paperly</span>
             <span className="cover-rule" />
-            <span className="cover-sub">A bound record</span>
+            <span className="cover-sub">Read less. Think more.</span>
           </div>
           <div className="cover-inside" />
         </div>

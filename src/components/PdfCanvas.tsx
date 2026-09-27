@@ -67,7 +67,7 @@ function paintHighlight(canvas: HTMLCanvasElement, viewport: ViewportPoint, runs
   if (!quoteText) return false;
   const indexes = new Set(quoteRunIndexes(runs, quoteText));
   if (indexes.size === 0) return false;
-  context.fillStyle = "rgba(250, 204, 21, 0.48)";
+  context.fillStyle = "rgba(20, 216, 166, 0.45)";
   for (const index of indexes) {
     const run = runs[index];
     if (!run) continue;

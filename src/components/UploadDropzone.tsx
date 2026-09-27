@@ -52,17 +52,17 @@ export function UploadDropzone({
     >
       <DocumentScene open={active} />
       <div className="stage-copy">
-        <p className="kicker text-[#e9d5ff]">Document intelligence</p>
-        <h1 className="mt-3 font-serif text-5xl tracking-tight text-balance text-white sm:text-7xl">
+        <p className="kicker text-accent">READ LESS. THINK MORE.</p>
+        <h1 className="mt-3 text-5xl font-semibold tracking-tight text-balance text-ink sm:text-7xl">
           AI PDF summarizer
         </h1>
-        <p className="mt-4 max-w-xl text-lg leading-8 text-[#ddd6fe]">
+        <p className="mt-4 max-w-xl text-lg leading-8 text-muted">
           Turn a paper, scan, or handwritten PDF into a structured summary. Every claim keeps its page.
         </p>
-        <p className="mt-8 font-serif text-3xl tracking-tight text-white">
+        <p className="mt-8 text-3xl font-semibold tracking-tight text-ink">
           {active ? "Drop to summarize" : "Drag a PDF here"}
         </p>
-        <p className="mt-2 text-sm text-[#ddd6fe]">Papers, scans, and handwritten notes. Up to 50 MB.</p>
+        <p className="mt-2 text-sm text-muted">Papers, scans, and handwritten notes. Up to 50 MB.</p>
         <button
           type="button"
           disabled={disabled}
