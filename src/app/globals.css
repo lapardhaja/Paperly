@@ -127,7 +127,167 @@ body {
   border-color: #152847;
   background: #f4efe4;
   box-shadow: 0 0 0 6px rgba(226, 182, 70, 0.28);
-  transform: translateY(-2px);
+}
+
+.book-stage {
+  width: 280px;
+  height: 280px;
+  perspective: 1400px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.book {
+  position: relative;
+  width: 156px;
+  height: 214px;
+  margin-left: 36px;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--book-rx)) rotateY(var(--book-ry));
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.book-spine {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  width: 16px;
+  transform: translateX(-8px) rotateY(90deg);
+  transform-origin: center center;
+  border-radius: 2px;
+  background: linear-gradient(#0c1830, #e2b646 48%, #0c1830);
+}
+
+.book-leaf {
+  position: absolute;
+  top: 8px;
+  right: 3px;
+  bottom: 8px;
+  left: 10px;
+  transform-style: preserve-3d;
+}
+
+.leaf-1 { transform: translateZ(2px); }
+.leaf-2 { transform: translateZ(-2px); }
+.leaf-3 { transform: translateZ(-6px); }
+.leaf-4 { transform: translateZ(-10px); }
+
+.leaf-sheet {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  border: 1px solid #d0c7b3;
+  border-radius: 1px 7px 7px 1px;
+  background: linear-gradient(90deg, #e6dece 0 9px, #fbf8f2 9px);
+}
+
+.leaf-sheet span {
+  display: block;
+  height: 5px;
+  margin: 18px 14px 0 20px;
+  border-radius: 999px;
+  background: #e4dccb;
+}
+
+.leaf-sheet span:nth-child(2) { width: 72%; }
+.leaf-sheet span:nth-child(3) { width: 84%; }
+.leaf-sheet span:nth-child(4) { width: 48%; }
+
+.book-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.book.is-open .book-cover {
+  transform: rotateY(-38deg);
+}
+
+.book.is-reading .book-cover {
+  transform: rotateY(-72deg);
+}
+
+.cover-face,
+.cover-inside {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 2px 10px 10px 2px;
+}
+
+.cover-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #e2b646;
+  background:
+    linear-gradient(#132849, #132849) padding-box,
+    linear-gradient(160deg, #1b335c, #101c33 60%, #3c1e22);
+  box-shadow:
+    inset 0 0 0 7px #132849,
+    inset 0 0 0 8px #e2b64699;
+}
+
+.cover-inside {
+  transform: rotateY(180deg);
+  border: 1px solid #d0c7b3;
+  background:
+    linear-gradient(90deg, #e7d7a4 0 12px, transparent 12px),
+    #f6f0e4;
+}
+
+.cover-seal {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1.5px solid #e2b646;
+  border-radius: 999px;
+  color: #f2d17d;
+  font-family: var(--font-libre), serif;
+  font-size: 1.15rem;
+}
+
+.cover-title {
+  color: #f7f4ed;
+  font-family: var(--font-libre), serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.01em;
+}
+
+.cover-rule {
+  width: 46px;
+  height: 1px;
+  background: #e2b646;
+}
+
+.cover-sub {
+  color: #d5dfec;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.book.is-reading .leaf-1 .leaf-sheet { animation: leaf-turn 1.15s ease-in-out infinite; }
+.book.is-reading .leaf-2 .leaf-sheet { animation: leaf-turn 1.15s ease-in-out 0.16s infinite; }
+.book.is-reading .leaf-3 .leaf-sheet { animation: leaf-turn 1.15s ease-in-out 0.32s infinite; }
+
+@keyframes leaf-turn {
+  0%,
+  100% {
+    transform: rotateY(0deg);
+  }
+  42% {
+    transform: rotateY(-52deg);
+  }
 }
 
 .skeleton {
@@ -303,5 +463,12 @@ body {
   .drop-target.is-active,
   .btn-primary:active {
     transform: none;
+  }
+
+  .book,
+  .book-cover,
+  .leaf-sheet {
+    transition: none;
+    animation: none;
   }
 }
