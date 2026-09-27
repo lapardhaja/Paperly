@@ -322,7 +322,7 @@ export function Workspace({
           <p className="mb-8 text-[15px] leading-7 font-medium text-ink">{paper.abstract}</p>
         ) : null}
         {error ? (
-          <p className="banner-warn mb-6 px-4 py-3">
+          <p className="banner-warn mb-6 px-4 py-3" role="alert">
             {error}
           </p>
         ) : null}

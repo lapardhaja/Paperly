@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
-const REST = { x: 8, y: -22 };
-const OPEN = { x: 10, y: 0 };
+const REST = { x: 14, y: -28 };
+const OPEN = { x: 8, y: -16 };
 
 const LEAVES = ["leaf-1", "leaf-2", "leaf-3", "leaf-4"] as const;
 
@@ -38,8 +38,8 @@ export function DocumentScene({ intent = "rest", page }: { intent?: BookIntent; 
       const px = (event.clientX - rect.left) / rect.width - 0.5;
       const py = (event.clientY - rect.top) / rect.height - 0.5;
       setTilt({
-        x: Math.max(-2, Math.min(16, REST.x + py * -14)),
-        y: Math.max(-38, Math.min(-8, REST.y + px * 20)),
+        x: Math.max(4, Math.min(28, REST.x + py * -16)),
+        y: Math.max(-48, Math.min(-18, REST.y + px * 18)),
       });
     };
 
@@ -59,7 +59,9 @@ export function DocumentScene({ intent = "rest", page }: { intent?: BookIntent; 
   return (
     <div ref={stageRef} className="book-stage" style={style} aria-hidden={page ? undefined : true}>
       <div className={`book${posed}`}>
+        <div className="book-shadow" />
         <div className="book-spine" />
+        <div className="page-block" />
         {LEAVES.map((leaf) => (
           <div key={leaf} className={`book-leaf ${leaf}`}>
             <div className="leaf-sheet">

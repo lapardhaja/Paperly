@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Atkinson_Hyperlegible, Crimson_Pro } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
-const inter = Inter({
+const sans = Atkinson_Hyperlegible({
   subsets: ["latin"],
+  weight: ["400", "700"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-atkinson",
+});
+
+const serif = Crimson_Pro({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+  variable: "--font-crimson",
 });
 
 export const metadata: Metadata = {
@@ -23,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${sans.variable} ${serif.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-paper text-ink">{children}</body>
     </html>
   );

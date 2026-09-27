@@ -135,9 +135,9 @@ export function SummaryView({
                   });
                   onWrite(item, settings, false);
                 }}
-                className={`h-10 cursor-pointer rounded-full px-4 text-sm font-semibold transition active:scale-[0.98] ${
+                className={`h-11 cursor-pointer rounded-full px-4 text-sm font-semibold transition duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97] ${
                   selected
-                    ? "choice-on shadow-[0_8px_18px_rgba(99,102,241,0.28)]"
+                    ? "choice-on"
                     : "bg-surface text-ink ring-2 ring-line hover:ring-accent"
                 }`}
               >
@@ -178,7 +178,7 @@ export function SummaryView({
                     focus: activeView.focus,
                   })
                 }
-                className="mt-1 block h-10 w-full cursor-pointer rounded-full border-2 border-line bg-surface pr-8 pl-3 text-sm font-semibold text-ink outline-none focus:border-accent"
+                className="mt-1 block h-11 w-full cursor-pointer rounded-full border-2 border-line bg-surface pr-8 pl-3 text-sm font-semibold text-ink outline-none focus:border-accent"
               >
                 {toneOptions(activeView.tone).map((tone) => (
                   <option key={tone} value={tone}>
@@ -202,7 +202,7 @@ export function SummaryView({
                     focus: activeView.focus,
                   })
                 }
-                className="mt-1 block h-10 w-full rounded-full border-2 border-line bg-surface px-3 text-sm font-semibold text-ink outline-none focus:border-accent"
+                className="mt-1 block h-11 w-full rounded-full border-2 border-line bg-surface px-3 text-sm font-semibold text-ink outline-none focus:border-accent"
               />
             </label>
           </div>

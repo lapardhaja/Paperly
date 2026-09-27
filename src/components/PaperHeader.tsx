@@ -36,7 +36,7 @@ export function PaperHeader({
           <button
             type="button"
             onClick={onViewPdf}
-            className="btn-primary h-10 px-4 text-sm"
+            className="btn-primary h-11 px-4 text-sm"
           >
             View PDF
           </button>
@@ -48,7 +48,8 @@ export function PaperHeader({
             key={item}
             type="button"
             onClick={() => onTab(item)}
-            className={`cursor-pointer border-b-2 px-3 py-2 text-sm font-semibold ${
+            aria-current={item === tab ? "page" : undefined}
+            className={`inline-flex h-11 cursor-pointer items-center border-b-2 px-3 text-sm font-semibold ${
               item === tab ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink"
             }`}
           >

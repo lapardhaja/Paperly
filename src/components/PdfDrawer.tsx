@@ -69,7 +69,7 @@ export function PdfDrawer({
   }
 
   return (
-    <aside className="fixed inset-0 z-30 flex flex-col bg-surface sm:inset-y-0 sm:left-auto sm:w-[var(--drawer-w)] sm:border-l sm:border-line">
+    <aside className="fixed inset-x-0 top-0 bottom-24 z-30 flex flex-col bg-surface sm:inset-y-0 sm:bottom-0 sm:left-auto sm:w-[var(--drawer-w)] sm:border-l sm:border-line">
       <button
         type="button"
         aria-label="Resize paper viewer"
@@ -82,7 +82,7 @@ export function PdfDrawer({
             type="button"
             onClick={() => onPage(safePage - 1)}
             disabled={safePage <= 1}
-            className="h-8 cursor-pointer rounded-full px-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-11 cursor-pointer rounded-full px-4 text-sm disabled:cursor-not-allowed disabled:opacity-40"
           >
             Prev
           </button>
@@ -93,7 +93,7 @@ export function PdfDrawer({
             type="button"
             onClick={() => onPage(safePage + 1)}
             disabled={safePage >= pageCount}
-            className="h-8 cursor-pointer rounded-full px-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-11 cursor-pointer rounded-full px-4 text-sm disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
           </button>
@@ -102,7 +102,7 @@ export function PdfDrawer({
           <button
             type="button"
             onClick={() => setZoom((current) => clampZoom(current - 0.25))}
-            className="h-8 w-8 cursor-pointer rounded-full text-sm"
+            className="h-11 w-11 cursor-pointer rounded-full text-sm"
             aria-label="Zoom out"
           >
             −
@@ -111,25 +111,25 @@ export function PdfDrawer({
             type="button"
             onClick={() => setZoom(1)}
             title="Fit width"
-            className="h-8 cursor-pointer rounded-full px-2 text-sm text-muted"
+            className="h-11 cursor-pointer rounded-full px-3 text-sm text-muted"
           >
             {Math.round(zoom * 100)}%
           </button>
           <button
             type="button"
             onClick={() => setZoom((current) => clampZoom(current + 0.25))}
-            className="h-8 w-8 cursor-pointer rounded-full text-sm"
+            className="h-11 w-11 cursor-pointer rounded-full text-sm"
             aria-label="Zoom in"
           >
             +
           </button>
-          <button type="button" onClick={onClose} className="cursor-pointer text-sm text-muted">
+          <button type="button" onClick={onClose} className="inline-flex h-11 cursor-pointer items-center px-3 text-sm text-muted">
             Close
           </button>
         </div>
       </div>
       {quoteState ? (
-        <p className="border-b border-line px-4 py-2 text-xs text-muted">
+        <p className="border-b border-line px-4 py-2 text-base text-muted">
           {quoteState.found
             ? "Highlighted in the paper."
             : "Opened this page. That wording is not in the PDF text layer."}

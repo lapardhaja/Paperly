@@ -57,7 +57,7 @@ export function Waiting({
           {steps.map((item, itemIndex) => (
             <li
               key={item}
-              className={`text-xs font-medium ${itemIndex === index ? "text-accent" : "text-muted"}`}
+              className={`text-base font-medium ${itemIndex === index ? "text-accent" : "text-muted"}`}
             >
               {itemIndex + 1}. {item}
             </li>

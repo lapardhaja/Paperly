@@ -15,8 +15,8 @@ export function AskBar({
 
   return (
     <form
-      className={`fixed bottom-0 left-0 z-20 border-t border-line bg-surface/90 px-4 py-3 shadow-[0_-10px_30px_rgba(15,23,42,0.06)] backdrop-blur ${
-        drawerOpen ? "right-0 hidden sm:block sm:right-[var(--drawer-w)]" : "right-0"
+      className={`fixed bottom-0 left-0 z-40 border-t border-line bg-surface/90 px-4 py-3 shadow-[0_-10px_30px_rgba(15,23,42,0.06)] backdrop-blur ${
+        drawerOpen ? "right-0 sm:right-[var(--drawer-w)]" : "right-0"
       }`}
       onSubmit={(event) => {
         event.preventDefault();

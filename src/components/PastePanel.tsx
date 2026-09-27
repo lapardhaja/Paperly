@@ -48,7 +48,7 @@ export function PastePanel({
         <button
           type="submit"
           disabled={disabled || text.trim().length === 0}
-          className="btn-primary h-10 px-4 text-sm"
+          className="btn-primary h-11 px-4 text-sm"
         >
           Use this text
         </button>

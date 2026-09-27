@@ -92,14 +92,14 @@ export function UploadDropzone({
               aria-label="Document text"
             />
             <div className="page-form-bar">
-              <p className="text-xs font-semibold text-ink">
+              <p className="text-sm font-semibold text-ink">
                 {words === 0 ? "The whole document" : `${words.toLocaleString()} words`}
               </p>
               <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setPaste(false)} className="cursor-pointer text-sm font-semibold text-ink">
+                <button type="button" onClick={() => setPaste(false)} className="inline-flex h-11 cursor-pointer items-center px-2 text-sm font-semibold text-ink">
                   Close
                 </button>
-                <button type="submit" disabled={busy || trimmed.length === 0} className="btn-primary h-9 px-4 text-sm">
+                <button type="submit" disabled={busy || trimmed.length === 0} className="btn-primary h-11 px-4 text-sm">
                   Analyze
                 </button>
               </div>
@@ -183,7 +183,7 @@ export function UploadDropzone({
       <div className="stage-copy">
         <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
         <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-balance text-ink">
-          {busy ? "Scanning the pages" : active ? "Release it into the book" : paste ? "Paste it in the book" : "Drop it in the book"}
+          <span className="font-serif">{busy ? "Scanning the pages" : active ? "Release it into the book" : paste ? "Paste it in the book" : "Drop it in the book"}</span>
         </h1>
         {busy ? (
           <div className="mt-5 max-w-md">
@@ -206,14 +206,14 @@ export function UploadDropzone({
             Select a file
           </button>
           {!paste ? (
-            <button type="button" onClick={() => setPaste(true)} className="cursor-pointer text-sm font-semibold text-ink">
+            <button type="button" onClick={() => setPaste(true)} className="inline-flex h-11 cursor-pointer items-center px-3 text-sm font-semibold text-ink">
               Paste instead
             </button>
           ) : null}
         </div>
         <p className="mt-3 text-sm text-muted">One PDF, up to 50 MB. Papers, scans, handwriting.</p>
-        {error ? <p className="banner-warn mt-4 px-4 py-3">{error}</p> : null}
-        <p className="mt-4 max-w-md text-xs leading-5 text-muted">
+        {error ? <p className="banner-warn mt-4 px-4 py-3" role="alert">{error}</p> : null}
+        <p className="mt-4 max-w-md text-base leading-6 text-muted">
           The file stays on this computer. Summaries send the document text to Google Gemini.
         </p>
       </div>
@@ -221,6 +221,7 @@ export function UploadDropzone({
         ref={inputRef}
         type="file"
         accept="application/pdf,.pdf"
+        aria-label="PDF file"
         className="sr-only"
         onChange={(event) => {
           takeFiles(event.target.files);
