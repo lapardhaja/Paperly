@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BrandMark } from "@/components/BrandMark";
+import { DocumentScene } from "@/components/DocumentScene";
 import { PastePanel } from "@/components/PastePanel";
 import { UploadDropzone } from "@/components/UploadDropzone";
 import { Waiting } from "@/components/Waiting";
@@ -118,7 +119,10 @@ export function Landing() {
           </p>
           <div className="site-hero-card mt-8 p-3 sm:p-4">
             {busy ? (
-              <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
+              <div className="flex flex-col items-center gap-4 px-2 py-4 sm:flex-row sm:justify-center sm:gap-8">
+                <DocumentScene open reading />
+                <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
+              </div>
             ) : (
               <UploadDropzone disabled={busy} onFile={(file) => void upload(file)} onReject={setError} />
             )}
