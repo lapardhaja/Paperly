@@ -79,7 +79,12 @@ export function DocumentScene({ intent = "rest", page }: { intent?: BookIntent; 
             <span className="cover-rule" />
             <span className="cover-sub">Read less. Think more.</span>
           </div>
-          <div className="cover-inside" />
+          <div className="cover-inside">
+            <span className="cover-seal">P</span>
+            <span className="cover-title">Paperly</span>
+            <span className="cover-rule" />
+            <span className="cover-sub">Read less. Think more.</span>
+          </div>
         </div>
       </div>
     </div>

@@ -3,15 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 
 import { DocumentScene, type BookIntent } from "@/components/DocumentScene";
+import { Waiting } from "@/components/Waiting";
+
+const READ_STEPS = [
+  "Taking in the document",
+  "Reading each page",
+  "Checking scans and handwriting",
+  "Opening the summary",
+] as const;
 
 export function UploadDropzone({
-  disabled,
+  busy,
+  status,
+  detail,
   error,
   onFile,
   onPaste,
   onReject,
 }: {
-  disabled: boolean;
+  busy: boolean;
+  status: string | null;
+  detail: string | null;
   error: string | null;
   onFile: (file: File) => void;
   onPaste: (text: string) => void;
@@ -38,7 +50,7 @@ export function UploadDropzone({
     return () => window.removeEventListener("keydown", onKey);
   }, [paste]);
 
-  const intent: BookIntent = active ? "open" : paste ? "paste" : "rest";
+  const intent: BookIntent = busy ? "reading" : active ? "open" : paste ? "paste" : "rest";
   const trimmed = text.trim();
   const words = trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
 
@@ -87,7 +99,7 @@ export function UploadDropzone({
                 <button type="button" onClick={() => setPaste(false)} className="cursor-pointer text-sm font-semibold text-ink">
                   Close
                 </button>
-                <button type="submit" disabled={disabled || trimmed.length === 0} className="btn-primary h-9 px-4 text-sm">
+                <button type="submit" disabled={busy || trimmed.length === 0} className="btn-primary h-9 px-4 text-sm">
                   Analyze
                 </button>
               </div>
@@ -156,33 +168,38 @@ export function UploadDropzone({
       }}
       className={`stage-drop ${active ? "is-active" : ""} ${paste ? "is-paste" : ""}`}
     >
-      {paste ? (
-        <div className="book-column is-editing">{scene}</div>
-      ) : (
-        <button
-          type="button"
-          className="book-column"
-          onClick={openPaste}
-          aria-label="Closed Paperly book. Click to paste inside it, or drop a PDF on it."
-        >
-          {scene}
-          {well}
-        </button>
-      )}
+      <div className={`book-column ${paste || busy ? "is-editing" : ""}`}>
+        {scene}
+        {well}
+        {paste || busy ? null : (
+          <button
+            type="button"
+            className="book-hit"
+            onClick={openPaste}
+            aria-label="Closed Paperly book. Click to paste inside it, or drop a PDF on it."
+          />
+        )}
+      </div>
       <div className="stage-copy">
         <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
         <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-balance text-ink">
-          {active ? "Release it into the book" : paste ? "Paste it in the book" : "Drop it in the book"}
+          {busy ? "Scanning the pages" : active ? "Release it into the book" : paste ? "Paste it in the book" : "Drop it in the book"}
         </h1>
-        <p className="mt-4 max-w-md text-base leading-7 text-muted sm:text-lg">
-          {paste
-            ? "The page is open. Paste as much of the document as you have, then analyze."
-            : "The book stays closed until a document goes in. Drop a PDF on the cover, or open it to paste."}
-        </p>
+        {busy ? (
+          <div className="mt-5 max-w-md">
+            <Waiting compact title={status ?? "Scanning the PDF"} detail={detail ?? undefined} steps={READ_STEPS} />
+          </div>
+        ) : (
+          <p className="mt-4 max-w-md text-base leading-7 text-muted sm:text-lg">
+            {paste
+              ? "The page is open. Paste as much of the document as you have, then analyze."
+              : "The book stays closed until a document goes in. Drop a PDF on the cover, or open it to paste."}
+          </p>
+        )}
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
             type="button"
-            disabled={disabled}
+            disabled={busy}
             onClick={() => inputRef.current?.click()}
             className="btn-primary h-12 px-6 text-[15px]"
           >

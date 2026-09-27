@@ -187,10 +187,18 @@ body:has(.landing-stage) {
   color: inherit;
   font: inherit;
   text-align: left;
+}
+
+.book-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  border: 0;
+  background: transparent;
   cursor: pointer;
 }
 
-.book-column:focus-visible {
+.book-hit:focus-visible {
   outline: 2px solid #6366f1;
   outline-offset: 6px;
 }
@@ -239,6 +247,16 @@ body:has(.landing-stage) {
   pointer-events: auto;
   border-radius: 1px 7px 7px 1px;
   background: linear-gradient(90deg, #ede9fe 0 5%, #ffffff 5%);
+  animation: page-in 0.55s ease 0.4s both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .page-form {
@@ -309,8 +327,10 @@ body:has(.landing-stage) {
   transform-style: preserve-3d;
   transform: rotateX(var(--book-rx)) rotateY(var(--book-ry));
   transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    margin-left 1.05s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 1.15s cubic-bezier(0.22, 0.7, 0.2, 1),
+    width 1.15s cubic-bezier(0.22, 0.7, 0.2, 1),
+    height 1.15s cubic-bezier(0.22, 0.7, 0.2, 1),
+    margin-left 1.15s cubic-bezier(0.22, 0.7, 0.2, 1);
 }
 
 @media (min-width: 800px) {
@@ -420,7 +440,7 @@ body:has(.landing-stage) {
   z-index: 4;
   transform-origin: left center;
   transform-style: preserve-3d;
-  transition: transform 1.05s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 1.15s cubic-bezier(0.45, 0.02, 0.15, 1);
 }
 
 .book.is-open .book-cover,
@@ -476,11 +496,34 @@ body:has(.landing-stage) {
 }
 
 .cover-inside {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   transform: rotateY(180deg);
-  border: 1px solid color-mix(in srgb, #0f172a 12%, #ffffff);
+  border: 1px solid color-mix(in srgb, #6366f1 35%, #ffffff);
   background:
     linear-gradient(90deg, #6366f1 0 18px, transparent 18px),
     linear-gradient(165deg, #ede9fe, #ffffff 55%);
+  color: #0f172a;
+}
+
+.cover-inside .cover-seal {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.cover-inside .cover-title {
+  color: #0f172a;
+}
+
+.cover-inside .cover-rule {
+  background: #6366f1;
+}
+
+.cover-inside .cover-sub {
+  color: #0f172a;
 }
 
 .cover-seal {
@@ -762,6 +805,7 @@ body:has(.landing-stage) {
   .book,
   .book-cover,
   .leaf-sheet,
+  .page-write,
   .cover-face::after,
   .scan-plane::before {
     transition: none;

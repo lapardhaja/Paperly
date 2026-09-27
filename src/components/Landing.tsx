@@ -4,16 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BrandLockup } from "@/components/BrandMark";
-import { DocumentScene } from "@/components/DocumentScene";
 import { UploadDropzone } from "@/components/UploadDropzone";
-import { Waiting } from "@/components/Waiting";
-
-const READ_STEPS = [
-  "Taking in the document",
-  "Reading each page",
-  "Checking scans and handwriting",
-  "Opening the summary",
-] as const;
 
 export function Landing() {
   const router = useRouter();
@@ -68,30 +59,15 @@ export function Landing() {
         <BrandLockup />
         <p className="kicker hidden text-ink sm:block">READ LESS. THINK MORE.</p>
       </header>
-      {busy ? (
-        <div className="stage-drop">
-          <div className="book-column">
-            <DocumentScene intent="reading" />
-          </div>
-          <div className="stage-copy">
-            <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
-            <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-ink">
-              Scanning the pages
-            </h1>
-            <div className="mt-5 max-w-md">
-              <Waiting compact title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <UploadDropzone
-          disabled={busy}
-          error={error}
-          onFile={(file) => void upload(file)}
-          onPaste={(text) => void paste(text)}
-          onReject={setError}
-        />
-      )}
+      <UploadDropzone
+        busy={busy}
+        status={status}
+        detail={fileLabel}
+        error={error}
+        onFile={(file) => void upload(file)}
+        onPaste={(text) => void paste(text)}
+        onReject={setError}
+      />
     </div>
   );
 }
