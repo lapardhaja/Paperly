@@ -285,7 +285,7 @@ export function artifactInstruction(
 ): string {
   const pasted =
     source === "text"
-      ? "This document was pasted. Every citation uses page 1. Put a section name in label when one is visible."
+      ? "This document was pasted and split into the numbered pages in the source. Cite those page numbers. Put a section name in label when one is visible."
       : "";
   const architecture = outputArchitecture(kind, settings);
 
@@ -319,7 +319,7 @@ ${pasted}`;
 export function chatInstruction(source: PaperSource): string {
   const pasted =
     source === "text"
-      ? "This document was pasted. Every citation uses page 1. Put a section name in label when one is visible."
+      ? "This document was pasted and split into the numbered pages in the source. Cite those page numbers. Put a section name in label when one is visible."
       : "Cite the page the quote comes from.";
   return `Answer the reader's question about this document.
 If the document does not contain the answer, set answerMarkdown to exactly "${MISSING_LINE}" and coverage to "not_in_paper".

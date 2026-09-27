@@ -96,7 +96,7 @@ export function AnalysisView({
         {coverageLine(artifact.coverage, artifact.truncated, artifact.pagesUsed)}
       </p>
       <section>
-        <h2 className="font-serif text-2xl tracking-tight">Strengths</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Strengths</h2>
         <p className="mt-1 text-sm font-medium text-ink">Tied to evidence in the document.</p>
         <div className="mt-4">
           <ItemList
@@ -111,7 +111,7 @@ export function AnalysisView({
       </section>
       <div className="grid gap-8 md:grid-cols-2">
         <section>
-          <h2 className="font-serif text-2xl tracking-tight">Authors&apos; stated limitations</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Authors&apos; stated limitations</h2>
           <p className="mt-1 text-sm font-medium text-ink">Limitations the authors wrote down.</p>
           <div className="mt-4">
             <ItemList
@@ -125,7 +125,7 @@ export function AnalysisView({
           </div>
         </section>
         <section>
-          <h2 className="font-serif text-2xl tracking-tight">Paperly&apos;s analysis</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Paperly&apos;s analysis</h2>
           <p className="mt-1 text-sm font-semibold text-warn">Judgments, not statements from the document.</p>
           <div className="mt-4">
             <ItemList

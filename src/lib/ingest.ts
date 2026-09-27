@@ -7,8 +7,8 @@ import { createPaper, updatePaper } from "@/lib/store";
 import type { PageText, Paper } from "@/lib/types";
 
 const MAX_PDF_BYTES = 50 * 1024 * 1024;
-const MAX_TEXT_CHARS = 2_000_000;
-const MIN_TEXT_CHARS = 80;
+const MAX_TEXT_CHARS = 8_000_000;
+const PASTE_PAGE_CHARS = 8_000;
 
 function isPdf(bytes: Uint8Array): boolean {
   return bytes.length > 4 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
@@ -92,16 +92,37 @@ export async function ingestPdf(file: File): Promise<Paper> {
   return enrichMetadata(paper, pages);
 }
 
+function paginatePastedText(text: string): PageText[] {
+  const pages: PageText[] = [];
+  let rest = text;
+  let pageNumber = 1;
+  while (rest.length > 0) {
+    if (rest.length <= PASTE_PAGE_CHARS) {
+      pages.push({ pageNumber, text: rest });
+      break;
+    }
+    let cut = rest.lastIndexOf("\n\n", PASTE_PAGE_CHARS);
+    if (cut < PASTE_PAGE_CHARS * 0.5) cut = rest.lastIndexOf("\n", PASTE_PAGE_CHARS);
+    if (cut < PASTE_PAGE_CHARS * 0.5) cut = rest.lastIndexOf(" ", PASTE_PAGE_CHARS);
+    if (cut < 1) cut = PASTE_PAGE_CHARS;
+    const chunk = rest.slice(0, cut).trimEnd();
+    if (chunk.length > 0) pages.push({ pageNumber, text: chunk });
+    rest = rest.slice(cut).trimStart();
+    pageNumber += 1;
+  }
+  return pages;
+}
+
 export async function ingestText(text: string): Promise<Paper> {
   const cleaned = text.replace(/\r\n/g, "\n").trim();
-  if (cleaned.length < MIN_TEXT_CHARS) {
-    throw new PaperlyError("Paste more of the paper. A few sentences is not enough.");
+  if (cleaned.length === 0) {
+    throw new PaperlyError("Paste the document into the book.");
   }
   if (cleaned.length > MAX_TEXT_CHARS) {
-    throw new PaperlyError("That text is too long to store.");
+    throw new PaperlyError("That text is longer than 8 million characters.");
   }
 
-  const pages: PageText[] = [{ pageNumber: 1, text: cleaned }];
+  const pages = paginatePastedText(cleaned);
   const paper = buildPaper({ source: "text", filename: null, pages });
   await createPaper({ paper, pages, pdf: null });
   return enrichMetadata(paper, pages);

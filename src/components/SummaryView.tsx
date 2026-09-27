@@ -132,7 +132,7 @@ export function SummaryView({
                 }}
                 className={`h-10 cursor-pointer rounded-full px-4 text-sm font-semibold transition active:scale-[0.98] ${
                   selected
-                    ? "bg-accent text-white shadow-[0_8px_18px_rgba(21,40,71,0.22)]"
+                    ? "choice-on shadow-[0_8px_18px_rgba(99,102,241,0.28)]"
                     : "bg-surface text-ink ring-2 ring-line hover:ring-accent"
                 }`}
               >

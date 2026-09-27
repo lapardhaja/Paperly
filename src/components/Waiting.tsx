@@ -50,8 +50,8 @@ export function Waiting({
         <p className="text-sm font-semibold tracking-tight text-ink">{title}</p>
         <p className="mt-1 text-sm text-ink">{step}</p>
         {detail ? <p className="mt-1 truncate text-xs font-medium text-muted">{detail}</p> : null}
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e6dfd1]">
-          <div className="progress-bar h-full w-1/3 rounded-full bg-gold" />
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-accent-soft">
+          <div className="progress-bar progress-fill h-full w-1/3 rounded-full" />
         </div>
         <ol className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
           {steps.map((item, itemIndex) => (

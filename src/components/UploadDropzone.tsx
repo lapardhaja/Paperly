@@ -1,24 +1,134 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+import { DocumentScene, type BookIntent } from "@/components/DocumentScene";
+import { Waiting } from "@/components/Waiting";
+
+const READ_STEPS = [
+  "Taking in the document",
+  "Reading each page",
+  "Checking scans and handwriting",
+  "Opening the summary",
+] as const;
 
 export function UploadDropzone({
-  disabled,
+  busy,
+  status,
+  detail,
+  error,
   onFile,
+  onPaste,
   onReject,
 }: {
-  disabled: boolean;
+  busy: boolean;
+  status: string | null;
+  detail: string | null;
+  error: string | null;
   onFile: (file: File) => void;
+  onPaste: (text: string) => void;
   onReject: (message: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const areaRef = useRef<HTMLTextAreaElement>(null);
+  const depth = useRef(0);
+  const dragged = useRef(false);
   const [active, setActive] = useState(false);
+  const [paste, setPaste] = useState(false);
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (paste) areaRef.current?.focus();
+  }, [paste]);
+
+  useEffect(() => {
+    if (!paste) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPaste(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [paste]);
+
+  const intent: BookIntent = busy ? "reading" : active ? "open" : paste ? "paste" : "rest";
+  const trimmed = text.trim();
+  const words = trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
+
+  function takeFiles(files: FileList | null | undefined) {
+    if (!files || files.length === 0) return;
+    if (files.length > 1) {
+      onReject("Upload one PDF at a time.");
+      return;
+    }
+    const file = files[0];
+    if (file) onFile(file);
+  }
+
+  function openPaste() {
+    if (dragged.current) {
+      dragged.current = false;
+      return;
+    }
+    setPaste(true);
+  }
+
+  const scene = (
+    <DocumentScene
+      intent={intent}
+      page={
+        paste ? (
+          <form
+            className="page-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (trimmed.length > 0) onPaste(text);
+            }}
+          >
+            <textarea
+              ref={areaRef}
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Paste the document on this page"
+              aria-label="Document text"
+            />
+            <div className="page-form-bar">
+              <p className="text-xs font-semibold text-ink">
+                {words === 0 ? "The whole document" : `${words.toLocaleString()} words`}
+              </p>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setPaste(false)} className="cursor-pointer text-sm font-semibold text-ink">
+                  Close
+                </button>
+                <button type="submit" disabled={busy || trimmed.length === 0} className="btn-primary h-9 px-4 text-sm">
+                  Analyze
+                </button>
+              </div>
+            </div>
+          </form>
+        ) : null
+      }
+    />
+  );
+  const well = active ? (
+    <div className="drop-well">
+      <span className="drop-well-kicker">Into the book</span>
+      <span className="drop-well-title">Release the PDF</span>
+    </div>
+  ) : null;
 
   return (
     <div
+      onPointerMove={(event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        event.currentTarget.style.setProperty("--spot-x", `${event.clientX - rect.left}px`);
+        event.currentTarget.style.setProperty("--spot-y", `${event.clientY - rect.top}px`);
+      }}
       onDragEnter={(event) => {
         event.preventDefault();
+        dragged.current = true;
+        depth.current += 1;
         setActive(true);
+        setPaste(false);
       }}
       onDragOver={(event) => {
         event.preventDefault();
@@ -26,57 +136,94 @@ export function UploadDropzone({
       }}
       onDragLeave={(event) => {
         event.preventDefault();
-        setActive(false);
+        depth.current -= 1;
+        if (depth.current <= 0) {
+          depth.current = 0;
+          setActive(false);
+          window.setTimeout(() => {
+            dragged.current = false;
+          }, 400);
+        }
       }}
       onDrop={(event) => {
         event.preventDefault();
+        depth.current = 0;
         setActive(false);
-        const { files } = event.dataTransfer;
-        if (files.length > 1) {
-          onReject("Upload one PDF at a time.");
+        takeFiles(event.dataTransfer.files);
+      }}
+      onPaste={(event) => {
+        if ((event.target as HTMLElement).closest("textarea")) return;
+        const file = event.clipboardData.files?.[0];
+        if (file) {
+          event.preventDefault();
+          onFile(file);
           return;
         }
-        const file = files[0];
-        if (file) onFile(file);
+        const pasted = event.clipboardData.getData("text");
+        if (pasted.trim().length > 0) {
+          event.preventDefault();
+          setText(pasted);
+          setPaste(true);
+        }
       }}
-      className={`drop-target flex min-h-80 flex-col items-center justify-center px-6 py-12 text-center ${
-        active ? "is-active" : ""
-      }`}
+      className={`stage-drop ${active ? "is-active" : ""} ${paste ? "is-paste" : ""}`}
     >
-      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-accent text-gold shadow-[0_10px_24px_rgba(21,40,71,0.22)]">
-        <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" aria-hidden>
-          <path
-            d="M7 3.5h7.1L19 8.3V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5A1.5 1.5 0 0 1 7.5 3.5H7Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
+      <div className={`book-column ${paste || busy ? "is-editing" : ""}`}>
+        {scene}
+        {well}
+        {paste || busy ? null : (
+          <button
+            type="button"
+            className="book-hit"
+            onClick={openPaste}
+            aria-label="Closed Paperly book. Click to paste inside it, or drop a PDF on it."
           />
-          <path d="M14 3.7V8.4h4.6" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M12 11.2v6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M9.4 13.6 12 11.1l2.6 2.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </span>
-      <p className="mt-5 font-serif text-2xl tracking-tight text-ink">
-        {active ? "Drop to summarize" : "Drag and drop a PDF"}
-      </p>
-      <p className="mt-2 max-w-sm text-sm font-medium text-ink">
-        Papers, scans, and handwritten notes. Up to 50 MB.
-      </p>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => inputRef.current?.click()}
-        className="btn-primary mt-6 h-12 px-6 text-[15px]"
-      >
-        Select a file
-      </button>
+        )}
+      </div>
+      <div className="stage-copy">
+        <p className="kicker text-accent sm:hidden">READ LESS. THINK MORE.</p>
+        <h1 className="mt-3 text-[clamp(2.4rem,4.8vw,4.6rem)] leading-[1.02] font-semibold tracking-tight text-balance text-ink">
+          {busy ? "Scanning the pages" : active ? "Release it into the book" : paste ? "Paste it in the book" : "Drop it in the book"}
+        </h1>
+        {busy ? (
+          <div className="mt-5 max-w-md">
+            <Waiting compact title={status ?? "Scanning the PDF"} detail={detail ?? undefined} steps={READ_STEPS} />
+          </div>
+        ) : (
+          <p className="mt-4 max-w-md text-base leading-7 text-muted sm:text-lg">
+            {paste
+              ? "The page is open. Paste as much of the document as you have, then analyze."
+              : "The book stays closed until a document goes in. Drop a PDF on the cover, or open it to paste."}
+          </p>
+        )}
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => inputRef.current?.click()}
+            className="btn-primary h-12 px-6 text-[15px]"
+          >
+            Select a file
+          </button>
+          {!paste ? (
+            <button type="button" onClick={() => setPaste(true)} className="cursor-pointer text-sm font-semibold text-ink">
+              Paste instead
+            </button>
+          ) : null}
+        </div>
+        <p className="mt-3 text-sm text-muted">One PDF, up to 50 MB. Papers, scans, handwriting.</p>
+        {error ? <p className="banner-warn mt-4 px-4 py-3">{error}</p> : null}
+        <p className="mt-4 max-w-md text-xs leading-5 text-muted">
+          The file stays on this computer. Summaries send the document text to Google Gemini.
+        </p>
+      </div>
       <input
         ref={inputRef}
         type="file"
         accept="application/pdf,.pdf"
         className="sr-only"
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) onFile(file);
+          takeFiles(event.target.files);
           event.target.value = "";
         }}
       />

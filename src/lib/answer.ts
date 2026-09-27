@@ -46,7 +46,7 @@ function documentBlock(paper: Paper, retrieval: Retrieval): string {
     retrieval.truncated
       ? "This is a subset of a long document. Do not treat missing pages as empty."
       : "The full extracted text is included.",
-    paper.source === "text" ? "Source: pasted text. Citations use page 1." : "",
+    paper.source === "text" ? "Source: pasted text, split into the numbered pages below." : "",
     paper.textQuality === "low"
       ? "Extracted text is sparse. This PDF may be scanned. If a claim is only visible in the attached PDF and not in the PAPER text, say so and do not invent a quote."
       : "",

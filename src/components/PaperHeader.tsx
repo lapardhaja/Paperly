@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { BrandMark } from "@/components/BrandMark";
+import { BrandLockup } from "@/components/BrandMark";
 import { paperMetaLine, tabLabel } from "@/lib/format";
 import type { Paper, WorkspaceTab } from "@/lib/types";
 
@@ -22,14 +22,13 @@ export function PaperHeader({
   onViewPdf: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-surface/85 shadow-[0_8px_24px_rgba(21,40,71,0.05)] backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-line bg-surface/85 shadow-[0_8px_24px_rgba(15,23,42,0.05)] backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-ink">
-          <BrandMark className="h-8 w-8" />
-          <span className="font-serif text-base tracking-tight">Paperly</span>
+        <Link href="/" className="shrink-0">
+          <BrandLockup size="sm" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-serif text-lg tracking-tight text-ink">{paper.title ?? "Untitled document"}</h1>
+          <h1 className="truncate text-lg font-semibold tracking-tight text-ink">{paper.title ?? "Untitled document"}</h1>
           <p className="truncate text-sm font-medium text-ink">{paperMetaLine(paper)}</p>
           {model ? <p className="truncate font-mono text-xs font-semibold text-ink">{model}</p> : null}
         </div>
