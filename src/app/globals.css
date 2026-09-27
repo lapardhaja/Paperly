@@ -438,6 +438,7 @@ body:has(.landing-stage) {
   position: absolute;
   inset: 0;
   z-index: 4;
+  transform: translateZ(28px);
   transform-origin: left center;
   transform-style: preserve-3d;
   transition: transform 1.15s cubic-bezier(0.45, 0.02, 0.15, 1);
@@ -446,7 +447,7 @@ body:has(.landing-stage) {
 .book.is-open .book-cover,
 .book.is-paste .book-cover,
 .book.is-reading .book-cover {
-  transform: rotateY(-168deg);
+  transform: translateZ(28px) rotateY(-168deg);
 }
 
 .book.is-open .leaf-1 .leaf-sheet {
