@@ -48,18 +48,21 @@ export function UploadDropzone({
         const file = files[0];
         if (file) onFile(file);
       }}
-      className={`drop-target flex min-h-80 flex-col items-center justify-center gap-2 px-4 py-8 text-center sm:flex-row sm:gap-8 sm:px-8 sm:text-left ${
-        active ? "is-active" : ""
-      }`}
+      className={`stage-drop ${active ? "is-active" : ""}`}
     >
       <DocumentScene open={active} />
-      <div className="flex max-w-sm flex-col items-center sm:items-start">
-        <p className="font-serif text-2xl tracking-tight text-ink">
-          {active ? "Drop to summarize" : "Drag and drop a PDF"}
+      <div className="stage-copy">
+        <p className="kicker text-[#e9d5ff]">Document intelligence</p>
+        <h1 className="mt-3 font-serif text-5xl tracking-tight text-balance text-white sm:text-7xl">
+          AI PDF summarizer
+        </h1>
+        <p className="mt-4 max-w-xl text-lg leading-8 text-[#ddd6fe]">
+          Turn a paper, scan, or handwritten PDF into a structured summary. Every claim keeps its page.
         </p>
-        <p className="mt-2 text-sm font-medium text-ink">
-          Papers, scans, and handwritten notes. Up to 50 MB.
+        <p className="mt-8 font-serif text-3xl tracking-tight text-white">
+          {active ? "Drop to summarize" : "Drag a PDF here"}
         </p>
+        <p className="mt-2 text-sm text-[#ddd6fe]">Papers, scans, and handwritten notes. Up to 50 MB.</p>
         <button
           type="button"
           disabled={disabled}

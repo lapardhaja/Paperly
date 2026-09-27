@@ -5,9 +5,11 @@ import { useState } from "react";
 export function PastePanel({
   disabled,
   onPaste,
+  buttonClassName = "cursor-pointer text-sm font-semibold text-accent underline-offset-4 hover:underline",
 }: {
   disabled: boolean;
   onPaste: (text: string) => void;
+  buttonClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -17,7 +19,7 @@ export function PastePanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="cursor-pointer text-sm font-semibold text-accent underline-offset-4 hover:underline"
+        className={buttonClassName}
       >
         Paste text instead
       </button>

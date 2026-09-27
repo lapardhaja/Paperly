@@ -129,23 +129,103 @@ body {
   box-shadow: 0 0 0 6px rgba(226, 182, 70, 0.28);
 }
 
+.landing-stage {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 72% 58% at 38% 46%, rgba(168, 85, 247, 0.62), transparent 62%),
+    radial-gradient(ellipse 42% 36% at 82% 12%, rgba(216, 180, 254, 0.38), transparent 58%),
+    linear-gradient(180deg, #12081f 0%, #3b0764 46%, #1a0b2e 100%);
+  color: #f5f3ff;
+}
+
+.stage-drop {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 100dvh;
+  padding: 5.5rem 6vw 3rem;
+}
+
+.stage-drop.is-active {
+  background: radial-gradient(circle at 36% 48%, rgba(233, 213, 255, 0.16), transparent 46%);
+}
+
+.stage-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 38rem;
+}
+
+.stage-lower {
+  background: linear-gradient(180deg, #1a0b2e, #0c0616);
+  padding: 5rem 6vw 6rem;
+}
+
+.stage-lower .hoban-card {
+  border-color: rgba(233, 213, 255, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f3ff;
+  box-shadow: none;
+}
+
+.landing-stage .btn-primary {
+  background: #f5f3ff;
+  color: #3b0764;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+.landing-stage .btn-primary:hover {
+  background: #fff;
+}
+
 .book-stage {
-  width: 280px;
-  height: 280px;
-  perspective: 1400px;
+  position: relative;
+  width: 100%;
+  height: min(78vh, 760px);
+  perspective: 2200px;
   display: grid;
   place-items: center;
   pointer-events: none;
 }
 
+.book-stage::after {
+  content: "";
+  position: absolute;
+  bottom: 8%;
+  left: 18%;
+  width: 48%;
+  height: 48px;
+  background: radial-gradient(ellipse, rgba(192, 132, 252, 0.7), transparent 70%);
+  filter: blur(10px);
+}
+
 .book {
   position: relative;
-  width: 156px;
-  height: 214px;
-  margin-left: 36px;
+  width: min(70vw, 440px);
+  height: min(58vh, 600px);
+  margin-left: 8%;
   transform-style: preserve-3d;
   transform: rotateX(var(--book-rx)) rotateY(var(--book-ry));
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 800px) {
+  .book {
+    width: min(34vw, 480px);
+    height: min(68vh, 640px);
+  }
+}
+
+@media (max-width: 799px) {
+  .stage-drop {
+    grid-template-columns: 1fr;
+    padding-top: 5rem;
+  }
+
+  .book-stage {
+    height: min(52vh, 460px);
+  }
 }
 
 .book-spine {
@@ -153,11 +233,11 @@ body {
   top: 2px;
   bottom: 2px;
   left: 0;
-  width: 16px;
-  transform: translateX(-8px) rotateY(90deg);
+  width: 28px;
+  transform: translateX(-14px) rotateY(90deg);
   transform-origin: center center;
   border-radius: 2px;
-  background: linear-gradient(#0c1830, #e2b646 48%, #0c1830);
+  background: linear-gradient(#1e1b4b, #ddd6fe 48%, #1e1b4b);
 }
 
 .book-leaf {
@@ -180,13 +260,13 @@ body {
   transform-origin: left center;
   border: 1px solid #d0c7b3;
   border-radius: 1px 7px 7px 1px;
-  background: linear-gradient(90deg, #e6dece 0 9px, #fbf8f2 9px);
+  background: linear-gradient(90deg, #e6dece 0 4%, #fbf8f2 4%);
 }
 
 .leaf-sheet span {
   display: block;
-  height: 5px;
-  margin: 18px 14px 0 20px;
+  height: 1.5%;
+  margin: 7% 8% 0 12%;
   border-radius: 999px;
   background: #e4dccb;
 }
@@ -226,13 +306,11 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border: 1px solid #e2b646;
-  background:
-    linear-gradient(#132849, #132849) padding-box,
-    linear-gradient(160deg, #1b335c, #101c33 60%, #3c1e22);
+  border: 1px solid #e9d5ff;
+  background: linear-gradient(165deg, #5b21b6, #2e1065 52%, #1e1b4b);
   box-shadow:
-    inset 0 0 0 7px #132849,
-    inset 0 0 0 8px #e2b64699;
+    inset 0 0 0 14px #2e1065,
+    inset 0 0 0 16px #e9d5ffcc;
 }
 
 .cover-inside {
@@ -245,32 +323,32 @@ body {
 
 .cover-seal {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 18%;
+  aspect-ratio: 1;
   place-items: center;
-  border: 1.5px solid #e2b646;
+  border: 1.5px solid #e9d5ff;
   border-radius: 999px;
-  color: #f2d17d;
+  color: #f5f3ff;
   font-family: var(--font-libre), serif;
-  font-size: 1.15rem;
+  font-size: clamp(1.4rem, 3vh, 2.4rem);
 }
 
 .cover-title {
-  color: #f7f4ed;
+  color: #f5f3ff;
   font-family: var(--font-libre), serif;
-  font-size: 1.35rem;
+  font-size: clamp(2.2rem, 5vh, 4rem);
   letter-spacing: 0.01em;
 }
 
 .cover-rule {
-  width: 46px;
+  width: 28%;
   height: 1px;
-  background: #e2b646;
+  background: #e9d5ff;
 }
 
 .cover-sub {
-  color: #d5dfec;
-  font-size: 0.62rem;
+  color: #ddd6fe;
+  font-size: clamp(0.7rem, 1.5vh, 0.95rem);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;

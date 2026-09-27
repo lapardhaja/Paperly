@@ -98,67 +98,64 @@ export function Landing() {
   }
 
   return (
-    <div className="min-h-dvh">
-      <header className="sticky top-0 z-20 border-b border-line bg-surface/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <div className="flex items-center gap-2.5">
-            <BrandMark />
-            <span className="font-serif text-[17px] tracking-tight">Paperly</span>
-          </div>
-          <p className="kicker text-accent">AI PDF summarizer</p>
+    <div className="landing-stage">
+      <header className="absolute inset-x-0 top-0 z-30 flex h-16 items-center justify-between px-6 sm:px-10">
+        <div className="flex items-center gap-2.5 text-white">
+          <BrandMark className="h-9 w-9 bg-[#f5f3ff] text-[#4c1d95]" />
+          <span className="font-serif text-lg tracking-tight">Paperly</span>
         </div>
+        <p className="kicker text-[#e9d5ff]">AI PDF summarizer</p>
       </header>
-      <main className="mx-auto w-full max-w-3xl px-5 pt-8 pb-20">
-        <section className="site-hero rounded-[1.6rem] px-5 py-10 sm:px-10">
-          <p className="kicker text-center text-gold">Document intelligence</p>
-          <h1 className="mt-3 text-center font-serif text-4xl tracking-tight text-balance text-white sm:text-6xl">
-            AI PDF summarizer
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-center text-lg leading-7 text-[#d5dfec]">
-            Turn a paper, scan, or handwritten PDF into a structured summary. Every claim keeps its page.
-          </p>
-          <div className="site-hero-card mt-8 p-3 sm:p-4">
-            {busy ? (
-              <div className="flex flex-col items-center gap-4 px-2 py-4 sm:flex-row sm:justify-center sm:gap-8">
-                <DocumentScene open reading />
-                <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
-              </div>
-            ) : (
-              <UploadDropzone disabled={busy} onFile={(file) => void upload(file)} onReject={setError} />
-            )}
+      {busy ? (
+        <div className="stage-drop">
+          <DocumentScene open reading />
+          <div className="stage-copy">
+            <p className="kicker text-[#e9d5ff]">Document intelligence</p>
+            <h1 className="mt-3 font-serif text-5xl tracking-tight text-white sm:text-6xl">Reading the document</h1>
+            <div className="mt-6">
+              <Waiting title={status ?? "Reading the PDF"} detail={fileLabel ?? undefined} steps={READ_STEPS} />
+            </div>
           </div>
-        </section>
-        <div className="mt-4 flex justify-center">
-          <PastePanel disabled={busy} onPaste={(text) => void paste(text)} />
         </div>
-        {error ? <p className="banner-warn mt-4 px-4 py-3">{error}</p> : null}
-        <section className="mt-16">
-          <p className="kicker text-center text-accent">How it works</p>
-          <h2 className="mt-2 text-center font-serif text-3xl tracking-tight">Summarize a PDF in three steps</h2>
-          <ol className="mt-6 grid gap-4 sm:grid-cols-3">
+      ) : (
+        <UploadDropzone disabled={busy} onFile={(file) => void upload(file)} onReject={setError} />
+      )}
+      <section className="stage-lower">
+        <div className="mx-auto flex max-w-6xl justify-center">
+          <PastePanel
+            disabled={busy}
+            onPaste={(text) => void paste(text)}
+            buttonClassName="cursor-pointer text-sm font-semibold text-[#e9d5ff] underline-offset-4 hover:underline"
+          />
+        </div>
+        {error ? <p className="banner-warn mx-auto mt-4 max-w-6xl px-4 py-3">{error}</p> : null}
+        <div className="mx-auto mt-16 max-w-6xl">
+          <p className="kicker text-center text-[#e9d5ff]">How it works</p>
+          <h2 className="mt-2 text-center font-serif text-4xl tracking-tight text-white">Summarize a PDF in three steps</h2>
+          <ol className="mt-8 grid gap-4 sm:grid-cols-3">
             {STEPS.map((step, index) => (
-              <li key={step.title} className="lift hoban-card rounded-2xl p-4">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-accent font-serif text-sm text-white">
+              <li key={step.title} className="lift hoban-card rounded-2xl p-5">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f5f3ff] font-serif text-sm text-[#3b0764]">
                   {index + 1}
                 </span>
-                <h3 className="mt-3 font-serif text-lg tracking-tight">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-ink">{step.body}</p>
+                <h3 className="mt-3 font-serif text-xl tracking-tight">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#ddd6fe]">{step.body}</p>
               </li>
             ))}
           </ol>
-        </section>
-        <section className="mt-12 grid gap-4 sm:grid-cols-2">
-          {FEATURES.map((feature) => (
-            <article key={feature.title} className="lift hoban-card rounded-2xl p-5">
-              <h3 className="font-serif text-lg tracking-tight">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-ink">{feature.body}</p>
-            </article>
-          ))}
-        </section>
-        <p className="mt-10 text-center text-xs leading-5 font-medium text-muted">
-          The file stays on this computer. When you summarize or ask, the document text is sent to Google Gemini.
-        </p>
-      </main>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {FEATURES.map((feature) => (
+              <article key={feature.title} className="lift hoban-card rounded-2xl p-5">
+                <h3 className="font-serif text-xl tracking-tight">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#ddd6fe]">{feature.body}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-10 text-center text-xs leading-5 text-[#c4b5fd]">
+            The file stays on this computer. When you summarize or ask, the document text is sent to Google Gemini.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
