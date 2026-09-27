@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { AnswerBlock } from "@/components/AnswerBlock";
+import type { LocateClaim } from "@/components/MarkdownView";
 import { SkeletonBlock, Waiting } from "@/components/Waiting";
 import {
   defaultSummaryWords,
@@ -58,18 +59,22 @@ export function SummaryView({
   source,
   loading,
   activeQuote,
+  activePage,
   onWrite,
   onOpenPage,
   onPreviewPage,
+  onLocateClaim,
 }: {
   artifacts: ArtifactMap;
   mode: SummaryMode | null;
   source: PaperSource;
   loading: boolean;
   activeQuote?: string;
+  activePage?: number;
   onWrite: (mode: SummaryMode, settings: SummarySettings, force: boolean) => void;
   onOpenPage: OpenPage;
   onPreviewPage: OpenPage;
+  onLocateClaim?: LocateClaim;
 }) {
   const [drafts, setDrafts] = useState<Partial<Record<SummaryMode, Draft>>>({});
 
@@ -144,8 +149,8 @@ export function SummaryView({
             );
           })}
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
-          <label className="text-sm font-semibold text-ink">
+        <div className="mt-4 flex flex-wrap items-start gap-3">
+          <label className="min-w-[min(100%,12rem)] grow basis-[min(100%,28rem)] text-sm font-semibold text-ink">
             Focus questions
             <textarea
               value={activeView.focus}
@@ -161,7 +166,7 @@ export function SummaryView({
               className="mt-1 block w-full resize-y rounded-xl border-2 border-line bg-surface px-3 py-2 text-sm font-medium text-ink outline-none focus:border-accent"
             />
           </label>
-          <div className="flex flex-col gap-3">
+          <div className="flex w-[min(100%,18.5rem)] shrink-0 grow flex-col gap-3 sm:grow-0">
             <label className="text-sm font-semibold text-ink">
               Tone
               <select
@@ -173,7 +178,7 @@ export function SummaryView({
                     focus: activeView.focus,
                   })
                 }
-                className="mt-1 block h-10 w-full cursor-pointer rounded-full border-2 border-line bg-surface px-3 text-sm font-semibold text-ink outline-none focus:border-accent"
+                className="mt-1 block h-10 w-full cursor-pointer rounded-full border-2 border-line bg-surface pr-8 pl-3 text-sm font-semibold text-ink outline-none focus:border-accent"
               >
                 {toneOptions(activeView.tone).map((tone) => (
                   <option key={tone} value={tone}>
@@ -236,8 +241,10 @@ export function SummaryView({
             answer={summary.answer}
             source={source}
             activeQuote={activeQuote}
+            activePage={activePage}
             onOpenPage={onOpenPage}
             onPreviewPage={onPreviewPage}
+            onLocateClaim={onLocateClaim}
           />
         </div>
       ) : null}

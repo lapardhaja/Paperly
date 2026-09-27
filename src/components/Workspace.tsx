@@ -33,6 +33,12 @@ function isAnalysis(artifact: Artifact | undefined): artifact is AnalysisArtifac
   return artifact?.kind === "analysis";
 }
 
+function quoteList(quote?: string | string[]): string[] {
+  if (!quote) return [];
+  const items = Array.isArray(quote) ? quote : [quote];
+  return items.map((item) => item.trim()).filter((item) => item.length > 0);
+}
+
 export function Workspace({
   paper,
   initialMessages,
@@ -51,9 +57,10 @@ export function Workspace({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ArtifactKind | "chat" | null>(null);
   const [summaryMode, setSummaryMode] = useState<SummaryMode | null>("detailed");
-  const [drawer, setDrawer] = useState<{ open: boolean; page: number; quote?: string }>({
+  const [drawer, setDrawer] = useState<{ open: boolean; page: number; quotes: string[] }>({
     open: false,
     page: 1,
+    quotes: [],
   });
   const [drawerWidth, setDrawerWidth] = useState(880);
   const [hint, setHint] = useState<string | null>(null);
@@ -80,7 +87,7 @@ export function Workspace({
     if (paper.source !== "pdf") return;
     if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
     setHint(null);
-    setDrawer({ open: true, page, quote });
+    setDrawer({ open: true, page, quotes: quoteList(quote) });
   };
 
   const previewPage: OpenPage = (page, quote) => {
@@ -88,8 +95,46 @@ export function Workspace({
     if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
     hoverTimer.current = window.setTimeout(() => {
       setHint(null);
-      setDrawer({ open: true, page, quote });
+      setDrawer({ open: true, page, quotes: quoteList(quote) });
     }, 180);
+  };
+
+  async function resolveClaim(pages: number[], claim: string) {
+    const seq = locateSeq.current + 1;
+    locateSeq.current = seq;
+    const first = pages[0];
+    if (first) setDrawer({ open: true, page: first, quotes: [] });
+    setHint(null);
+    const quote = claim.trim().slice(0, 800);
+    if (quote.length < 12) return;
+    const response = await fetch(`/api/papers/${paper.id}/locate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quote, pages }),
+    });
+    if (seq !== locateSeq.current) return;
+    const data = (await response.json()) as { page?: number | null; highlight?: string | null; error?: string };
+    if (!response.ok) {
+      setHint(data.error ?? "Could not search the paper.");
+      return;
+    }
+    if (!data.page) {
+      setHint("Couldn't find that wording on the cited page.");
+      return;
+    }
+    setDrawer({ open: true, page: data.page, quotes: data.highlight ? [data.highlight] : [] });
+  }
+
+  const locateClaim = (pages: number[], claim: string, preview: boolean) => {
+    if (paper.source !== "pdf" || pages.length === 0) return;
+    if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    if (preview) {
+      hoverTimer.current = window.setTimeout(() => {
+        void resolveClaim(pages, claim);
+      }, 180);
+      return;
+    }
+    void resolveClaim(pages, claim);
   };
 
   async function generate(kind: ArtifactKind, request?: { settings: SummarySettings; force: boolean }) {
@@ -201,7 +246,7 @@ export function Workspace({
       body: JSON.stringify({ quote }),
     });
     if (seq !== locateSeq.current) return;
-    const data = (await response.json()) as { page?: number | null; error?: string };
+    const data = (await response.json()) as { page?: number | null; highlight?: string | null; error?: string };
     if (!response.ok) {
       setHint(data.error ?? "Could not search the paper.");
       return;
@@ -210,7 +255,7 @@ export function Workspace({
       setHint("That selection is not in the extracted text.");
       return;
     }
-    openPage(data.page, quote);
+    openPage(data.page, data.highlight ?? quote);
   }
 
   function onSourceMouseUp(event: ReactMouseEvent<HTMLElement>) {
@@ -299,7 +344,7 @@ export function Workspace({
             artifact={insights}
             source={paper.source}
             loading={pending === "insights"}
-            activeQuote={drawer.quote}
+            activeQuote={drawer.quotes[0]}
             onOpenPage={openPage}
             onPreviewPage={previewPage}
           />
@@ -310,10 +355,12 @@ export function Workspace({
             mode={summaryMode}
             source={paper.source}
             loading={summaryMode ? pending === summaryKind(summaryMode) : false}
-            activeQuote={drawer.quote}
+            activeQuote={drawer.quotes[0]}
+            activePage={drawer.open ? drawer.page : undefined}
             onWrite={writeSummary}
             onOpenPage={openPage}
             onPreviewPage={previewPage}
+            onLocateClaim={locateClaim}
           />
         ) : null}
         {tab === "analysis" ? (
@@ -321,7 +368,7 @@ export function Workspace({
             artifact={analysis}
             source={paper.source}
             loading={pending === "analysis"}
-            activeQuote={drawer.quote}
+            activeQuote={drawer.quotes[0]}
             onGenerate={() => void generate("analysis")}
             onOpenPage={openPage}
             onPreviewPage={previewPage}
@@ -332,9 +379,11 @@ export function Workspace({
             messages={messages}
             source={paper.source}
             pending={pending === "chat"}
-            activeQuote={drawer.quote}
+            activeQuote={drawer.quotes[0]}
+            activePage={drawer.open ? drawer.page : undefined}
             onOpenPage={openPage}
             onPreviewPage={previewPage}
+            onLocateClaim={locateClaim}
           />
         ) : null}
       </main>
@@ -344,10 +393,10 @@ export function Workspace({
           paperId={paper.id}
           pageCount={paper.pageCount}
           page={drawer.page}
-          quote={drawer.quote ?? ""}
+          quotes={drawer.quotes}
           width={drawerWidth}
           onResize={setDrawerWidth}
-          onPage={(page) => setDrawer({ open: true, page })}
+          onPage={(page) => setDrawer({ open: true, page, quotes: [] })}
           onClose={() => setDrawer((current) => ({ ...current, open: false }))}
         />
       ) : null}

@@ -17,7 +17,7 @@ export function PdfDrawer({
   paperId,
   pageCount,
   page,
-  quote,
+  quotes,
   width,
   onResize,
   onPage,
@@ -26,25 +26,26 @@ export function PdfDrawer({
   paperId: string;
   pageCount: number;
   page: number;
-  quote: string;
+  quotes: string[];
   width: number;
   onResize: (width: number) => void;
   onPage: (page: number) => void;
   onClose: () => void;
 }) {
+  const quotesKey = quotes.join("\u0001");
   const [failed, setFailed] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [located, setLocated] = useState<{ quote: string; found: boolean } | null>(null);
+  const [located, setLocated] = useState<{ key: string; found: boolean } | null>(null);
   const fail = useCallback(() => setFailed(true), []);
   const reportQuote = useCallback((found: boolean) => {
     setLocated((current) => {
-      if (current?.quote === quote && current.found === found) return current;
-      return { quote, found };
+      if (current?.key === quotesKey && current.found === found) return current;
+      return { key: quotesKey, found };
     });
-  }, [quote]);
+  }, [quotesKey]);
   const safePage = Math.min(Math.max(page, 1), Math.max(pageCount, 1));
   const url = `/api/papers/${paperId}/pdf`;
-  const quoteState = quote && located?.quote === quote ? located : null;
+  const quoteState = quotesKey && located?.key === quotesKey ? located : null;
 
   function startResize(event: ReactPointerEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -141,7 +142,7 @@ export function PdfDrawer({
           url={url}
           pageNumber={safePage}
           zoom={zoom}
-          quote={quote}
+          quotes={quotes}
           onError={fail}
           onQuoteLocated={reportQuote}
         />

@@ -408,9 +408,9 @@ body:has(.landing-stage) {
   position: absolute;
   inset: 0;
   transform-origin: left center;
-  border: 1px solid #6366f1;
+  border: 1px solid #e2e8f0;
   border-radius: 1px 7px 7px 1px;
-  background: linear-gradient(165deg, #6366f1, #3b82f6);
+  background: #ffffff;
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -419,7 +419,7 @@ body:has(.landing-stage) {
   height: 1.5%;
   margin: 7% 8% 0 12%;
   border-radius: 999px;
-  background: transparent;
+  background: #e2e8f0;
 }
 
 .leaf-sheet span:nth-child(2) { width: 72%; }
@@ -560,12 +560,11 @@ body:has(.landing-stage) {
   position: absolute;
   left: 0;
   right: 0;
-  height: 22%;
+  height: 14%;
   background: linear-gradient(
     180deg,
     transparent,
-    color-mix(in srgb, #6366f1 70%, transparent),
-    color-mix(in srgb, #3b82f6 45%, transparent),
+    color-mix(in srgb, #6366f1 28%, transparent),
     transparent
   );
   animation: page-scan 1.45s ease-in-out infinite;
@@ -680,6 +679,16 @@ body:has(.landing-stage) {
   line-height: 1.4;
   padding: 0.05rem 0.42rem;
   vertical-align: 0.12em;
+}
+
+.page-cite[role="button"] {
+  cursor: pointer;
+}
+
+.page-cite[role="button"]:hover,
+.page-cite[data-active="true"] {
+  background: #6366f1;
+  color: #ffffff;
 }
 
 .markdown h2 {

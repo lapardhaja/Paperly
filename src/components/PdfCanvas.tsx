@@ -57,38 +57,46 @@ function textBox(run: PdfRun, viewport: ViewportPoint) {
   };
 }
 
-function paintHighlight(canvas: HTMLCanvasElement, viewport: ViewportPoint, runs: PdfRun[], quote: string): boolean {
+function paintHighlight(
+  canvas: HTMLCanvasElement,
+  viewport: ViewportPoint,
+  runs: PdfRun[],
+  quotes: string[],
+): { found: boolean; top: number } {
   const context = canvas.getContext("2d");
-  if (!context) return false;
+  if (!context) return { found: false, top: 0 };
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   context.setTransform(dpr, 0, 0, dpr, 0, 0);
   context.clearRect(0, 0, viewport.width, viewport.height);
-  const quoteText = quote.trim();
-  if (!quoteText) return false;
-  const indexes = new Set(quoteRunIndexes(runs, quoteText));
-  if (indexes.size === 0) return false;
-  context.fillStyle = "rgba(20, 216, 166, 0.45)";
-  for (const index of indexes) {
-    const run = runs[index];
-    if (!run) continue;
-    const box = textBox(run, viewport);
-    context.fillRect(box.left - 1, box.top - 1, box.width + 2, box.height + 2);
+  context.fillStyle = "rgba(250, 204, 21, 0.55)";
+  let top = Number.POSITIVE_INFINITY;
+  for (const quote of quotes) {
+    const quoteText = quote.trim();
+    if (!quoteText) continue;
+    for (const index of quoteRunIndexes(runs, quoteText)) {
+      const run = runs[index];
+      if (!run) continue;
+      const box = textBox(run, viewport);
+      context.fillRect(box.left - 1, box.top - 1, box.width + 2, box.height + 2);
+      if (box.top < top) top = box.top;
+    }
   }
-  return true;
+  if (top === Number.POSITIVE_INFINITY) return { found: false, top: 0 };
+  return { found: true, top };
 }
 
 export function PdfCanvas({
   url,
   pageNumber,
   zoom,
-  quote,
+  quotes,
   onError,
   onQuoteLocated,
 }: {
   url: string;
   pageNumber: number;
   zoom: number;
-  quote: string;
+  quotes: string[];
   onError: (message: string) => void;
   onQuoteLocated: (found: boolean) => void;
 }) {
@@ -210,14 +218,21 @@ export function PdfCanvas({
     };
   }, [onError, pageNumber, ready, zoom]);
 
+  const quotesKey = quotes.join("\u0001");
+
   useEffect(() => {
     const canvas = highlightRef.current;
+    const frame = frameRef.current;
     const viewport = viewportRef.current;
     const painted = paintedRef.current;
     if (!canvas || !viewport || !painted || painted.pageNumber !== pageNumber || painted.zoom !== zoom) return;
-    const found = paintHighlight(canvas, viewport, runsRef.current, quote);
-    if (quote.trim()) onQuoteLocated(found);
-  }, [onQuoteLocated, pageNumber, quote, renderGen, zoom]);
+    const paintedQuotes = quotesKey ? quotesKey.split("\u0001") : [];
+    const result = paintHighlight(canvas, viewport, runsRef.current, paintedQuotes);
+    if (paintedQuotes.length > 0) onQuoteLocated(result.found);
+    if (result.found && frame) {
+      frame.scrollTo({ top: Math.max(0, result.top - 72), behavior: "smooth" });
+    }
+  }, [onQuoteLocated, pageNumber, quotesKey, renderGen, zoom]);
 
   return (
     <div ref={frameRef} className="min-h-0 flex-1 overflow-auto bg-paper p-4">

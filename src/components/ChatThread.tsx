@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { AnswerBlock } from "@/components/AnswerBlock";
+import type { LocateClaim } from "@/components/MarkdownView";
 import { Waiting } from "@/components/Waiting";
 import type { ChatMessage, OpenPage, PaperSource } from "@/lib/types";
 
@@ -11,15 +12,19 @@ export function ChatThread({
   source,
   pending,
   activeQuote,
+  activePage,
   onOpenPage,
   onPreviewPage,
+  onLocateClaim,
 }: {
   messages: ChatMessage[];
   source: PaperSource;
   pending: boolean;
   activeQuote?: string;
+  activePage?: number;
   onOpenPage: OpenPage;
   onPreviewPage: OpenPage;
+  onLocateClaim?: LocateClaim;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -52,8 +57,10 @@ export function ChatThread({
                 answer={message.answer}
                 source={source}
                 activeQuote={activeQuote}
+                activePage={activePage}
                 onOpenPage={onOpenPage}
                 onPreviewPage={onPreviewPage}
+                onLocateClaim={onLocateClaim}
               />
             ) : (
               <p className="text-[15px] leading-7">{message.content}</p>

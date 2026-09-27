@@ -101,6 +101,118 @@ export function findQuotePage(pages: PageText[], quote: string): number | null {
   return match ? match.pageNumber : null;
 }
 
+const STOP_WORDS = new Set([
+  "that", "this", "with", "from", "into", "than", "then", "them", "they", "their", "there", "these",
+  "those", "about", "after", "before", "which", "while", "where", "when", "what", "have", "been",
+  "being", "were", "will", "would", "could", "should", "across", "under", "over", "among", "between",
+  "without", "within", "using", "such", "also", "only", "more", "most", "other", "some", "same",
+  "each", "both", "through", "because", "does", "make", "many", "much", "very", "just", "like",
+  "well", "even", "still", "your",
+]);
+
+function claimWords(value: string): string[] {
+  return normalizeQuote(value).split(" ").filter((word) => word.length > 0).slice(0, 80);
+}
+
+function pagePool(pages: PageText[], preferred: number[]): PageText[] {
+  const preferredPages = preferred.length
+    ? pages.filter((page) => preferred.includes(page.pageNumber) && page.text.trim().length > 0)
+    : [];
+  if (preferredPages.length > 0) return preferredPages;
+  return pages.filter((page) => page.text.trim().length > 0);
+}
+
+function tidyQuote(quote: string): string {
+  return quote.replace(/[,:;]+$/g, "").trim();
+}
+
+function longestWindow(page: PageText, words: string[]): { quote: string; length: number } | null {
+  const max = Math.min(words.length, 22);
+  const min = Math.min(4, words.length);
+  for (let size = max; size >= min; size -= 1) {
+    for (let start = 0; start + size <= words.length; start += 1) {
+      const quote = tidyQuote(words.slice(start, start + size).join(" "));
+      if (quote.length >= 8 && pageContains(page.text, quote)) return { quote, length: size };
+    }
+  }
+  return null;
+}
+
+function contentKey(word: string): string {
+  return word.replace(/[^a-z0-9]/g, "");
+}
+
+function fuzzyWindow(page: PageText, wanted: Set<string>): { quote: string; score: number } | null {
+  const words = normalizeQuote(page.text).split(" ").filter((word) => word.length > 0);
+  let best: { quote: string; score: number } | null = null;
+  const size = 18;
+  for (let start = 0; start < words.length; start += 1) {
+    const window = words.slice(start, start + size);
+    if (window.length < 6) break;
+    const seen = new Set<string>();
+    for (const word of window) {
+      const key = contentKey(word);
+      if (key.length > 3 && wanted.has(key)) seen.add(key);
+    }
+    if (seen.size < 3) continue;
+    if (!best || seen.size > best.score) {
+      best = { quote: tidyQuote(window.join(" ")), score: seen.size };
+    }
+  }
+  return best;
+}
+
+function wantedWords(claim: string): Set<string> {
+  const wanted = new Set<string>();
+  for (const word of claimWords(claim)) {
+    const key = contentKey(word);
+    if (key.length > 3 && !STOP_WORDS.has(key)) wanted.add(key);
+  }
+  return wanted;
+}
+
+function verbatimHighlight(
+  pages: PageText[],
+  words: string[],
+  preferred: number[],
+): { page: number; quote: string } | null {
+  let best: { page: number; quote: string; length: number } | null = null;
+  for (const page of pagePool(pages, preferred)) {
+    const hit = longestWindow(page, words);
+    if (!hit) continue;
+    if (!best || hit.length > best.length) best = { page: page.pageNumber, quote: hit.quote, length: hit.length };
+  }
+  return best ? { page: best.page, quote: best.quote } : null;
+}
+
+function fuzzyHighlight(
+  pages: PageText[],
+  claim: string,
+  preferred: number[],
+): { page: number; quote: string } | null {
+  const wanted = wantedWords(claim);
+  if (wanted.size < 3) return null;
+  let best: { page: number; quote: string; score: number } | null = null;
+  for (const page of pagePool(pages, preferred)) {
+    const hit = fuzzyWindow(page, wanted);
+    if (!hit) continue;
+    if (!best || hit.score > best.score) best = { page: page.pageNumber, quote: hit.quote, score: hit.score };
+  }
+  return best ? { page: best.page, quote: best.quote } : null;
+}
+
+export function bestHighlight(
+  pages: PageText[],
+  claim: string,
+  preferred: number[],
+): { page: number; quote: string } | null {
+  const words = claimWords(claim);
+  if (words.length === 0) return null;
+  const verbatim = verbatimHighlight(pages, words, preferred) ?? (preferred.length > 0 ? verbatimHighlight(pages, words, []) : null);
+  if (verbatim) return verbatim;
+  return fuzzyHighlight(pages, claim, preferred) ?? (preferred.length > 0 ? fuzzyHighlight(pages, claim, []) : null);
+}
+
 export function verifyCitations(citations: Citation[], pages: PageText[]): Citation[] {
   const kept: Citation[] = [];
 

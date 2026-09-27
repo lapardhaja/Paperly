@@ -65,7 +65,7 @@ export type SummarySettings = {
   focus: string;
 };
 
-export type OpenPage = (page: number, quote?: string) => void;
+export type OpenPage = (page: number, quote?: string | string[]) => void;
 
 export type ArtifactKind =
   | "insights"
