@@ -308,7 +308,9 @@ body:has(.landing-stage) {
   margin-left: 8%;
   transform-style: preserve-3d;
   transform: rotateX(var(--book-rx)) rotateY(var(--book-ry));
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-left 1.05s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (min-width: 800px) {
@@ -335,6 +337,14 @@ body:has(.landing-stage) {
     width: min(68vw, 300px);
     height: min(36vh, 320px);
     margin-left: 0;
+  }
+
+  .book.is-open,
+  .book.is-paste,
+  .book.is-reading {
+    width: min(42vw, 190px);
+    height: min(30vh, 260px);
+    margin-left: 34%;
   }
 
   .drop-well {
@@ -396,17 +406,27 @@ body:has(.landing-stage) {
 .leaf-sheet span:nth-child(3) { width: 84%; }
 .leaf-sheet span:nth-child(4) { width: 48%; }
 
+.book.is-open,
+.book.is-paste,
+.book.is-reading {
+  width: min(24vw, 360px);
+  height: min(54vh, 500px);
+  margin-left: 50%;
+}
+
 .book-cover {
   position: absolute;
   inset: 0;
   z-index: 4;
   transform-origin: left center;
   transform-style: preserve-3d;
-  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 1.05s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.book.is-open .book-cover {
-  transform: rotateY(-42deg);
+.book.is-open .book-cover,
+.book.is-paste .book-cover,
+.book.is-reading .book-cover {
+  transform: rotateY(-168deg);
 }
 
 .book.is-open .leaf-1 .leaf-sheet {
@@ -417,17 +437,9 @@ body:has(.landing-stage) {
   transform: rotateY(-14deg);
 }
 
-.book.is-paste .book-cover {
-  transform: rotateY(-64deg);
-}
-
 .book.is-paste .leaf-1 .leaf-sheet,
 .book.is-paste .leaf-2 .leaf-sheet {
   transform: none;
-}
-
-.book.is-reading .book-cover {
-  transform: rotateY(-72deg);
 }
 
 .cover-face,
@@ -467,8 +479,8 @@ body:has(.landing-stage) {
   transform: rotateY(180deg);
   border: 1px solid color-mix(in srgb, #0f172a 12%, #ffffff);
   background:
-    linear-gradient(90deg, #6366f1 0 12px, transparent 12px),
-    #ffffff;
+    linear-gradient(90deg, #6366f1 0 18px, transparent 18px),
+    linear-gradient(165deg, #ede9fe, #ffffff 55%);
 }
 
 .cover-seal {

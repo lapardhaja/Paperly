@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 const REST = { x: 8, y: -22 };
-const CALM = { x: 5, y: -16 };
+const OPEN = { x: 10, y: 0 };
 
 const LEAVES = ["leaf-1", "leaf-2", "leaf-3", "leaf-4"] as const;
 
@@ -13,7 +13,7 @@ export function DocumentScene({ intent = "rest", page }: { intent?: BookIntent; 
   const stageRef = useRef<HTMLDivElement>(null);
   const intentRef = useRef(intent);
   const [tilt, setTilt] = useState(REST);
-  const posedTilt = intent === "paste" || intent === "reading" ? CALM : tilt;
+  const posedTilt = intent === "rest" ? tilt : OPEN;
 
   useEffect(() => {
     intentRef.current = intent;
@@ -25,20 +25,14 @@ export function DocumentScene({ intent = "rest", page }: { intent?: BookIntent; 
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reduced = media.matches;
 
-    const rest = () => {
-      if (intentRef.current === "paste" || intentRef.current === "reading") setTilt(CALM);
-      else setTilt(REST);
-    };
+    const rest = () => setTilt(REST);
     const onChange = () => {
       reduced = media.matches;
       if (reduced) rest();
     };
     const move = (event: PointerEvent) => {
       if (reduced) return;
-      if (intentRef.current === "paste" || intentRef.current === "reading") {
-        setTilt(CALM);
-        return;
-      }
+      if (intentRef.current !== "rest") return;
       const rect = parent.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
       const px = (event.clientX - rect.left) / rect.width - 0.5;
