@@ -7,3 +7,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Cursor Cloud specific instructions
+
+- Install with `npm ci`. There is no test script. `npm run lint` and `npm run build` are the checks.
+- `npm run dev` serves http://localhost:3000. `GEMINI_API_KEY` must already be in the process environment. Copying `.env.example` to `.env` leaves the key empty. Restart the dev server after the key changes.
+- Paste and PDF ingest write `data/papers/<id>/`, which is gitignored. Summary, analysis, and chat call Gemini.
